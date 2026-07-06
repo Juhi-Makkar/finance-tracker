@@ -1,0 +1,294 @@
+/* ============================================
+   FINTRACK — PREMIUM THEME SYSTEM
+   All 4 themes defined using CSS variables
+   ============================================ */
+
+/* ── DEFAULT: Apple Glassmorphism ── */
+:root,
+body.theme-glass {
+  --bg: #0F172A;
+  --bg2: #1E293B;
+  --sidebar-bg: rgba(255,255,255,0.04);
+  --card: rgba(255,255,255,0.06);
+  --card-hover: rgba(255,255,255,0.09);
+  --border: rgba(255,255,255,0.08);
+  --accent: #6366f1;
+  --accent2: #22d3ee;
+  --green: #22c55e;
+  --red: #ef4444;
+  --yellow: #fbbf24;
+  --purple: #a855f7;
+  --orange: #f97316;
+  --text: #f1f5f9;
+  --text2: #cbd5e1;
+  --muted: #94a3b8;
+  --input-bg: rgba(255,255,255,0.05);
+  --shadow: 0 20px 40px rgba(0,0,0,0.3);
+  --radius: 16px;
+  --radius-sm: 10px;
+  --radius-lg: 20px;
+  --blur: blur(20px);
+  --nav-bg: rgba(15,23,42,0.85);
+  --modal-bg: #1e293b;
+  --sidebar-width: 240px;
+  --font-size: 14px;
+  --transition: all 0.3s ease;
+}
+
+/* ── Theme 2: Black & Gold Luxury ── */
+body.theme-luxury {
+  --bg: #111111;
+  --bg2: #1B1B1B;
+  --sidebar-bg: rgba(212,175,55,0.05);
+  --card: rgba(212,175,55,0.06);
+  --card-hover: rgba(212,175,55,0.1);
+  --border: rgba(212,175,55,0.2);
+  --accent: #D4AF37;
+  --accent2: #F5D060;
+  --green: #22c55e;
+  --red: #ef4444;
+  --yellow: #D4AF37;
+  --purple: #a855f7;
+  --orange: #f97316;
+  --text: #FFFFFF;
+  --text2: #E5E5E5;
+  --muted: #999999;
+  --input-bg: rgba(255,255,255,0.05);
+  --shadow: 0 20px 40px rgba(0,0,0,0.6);
+  --radius: 12px;
+  --radius-sm: 8px;
+  --radius-lg: 16px;
+  --blur: blur(20px);
+  --nav-bg: rgba(17,17,17,0.95);
+  --modal-bg: #1B1B1B;
+}
+
+/* ── Theme 3: Beige + Cream Minimal ── */
+body.theme-beige {
+  --bg: #F5F1E8;
+  --bg2: #EDE8DC;
+  --sidebar-bg: rgba(255,255,255,0.8);
+  --card: rgba(255,255,255,0.9);
+  --card-hover: rgba(255,255,255,1);
+  --border: rgba(139,115,85,0.15);
+  --accent: #8B7355;
+  --accent2: #A0845C;
+  --green: #2D6A4F;
+  --red: #C0392B;
+  --yellow: #D4A017;
+  --purple: #6B4F9E;
+  --orange: #C0622B;
+  --text: #2C1810;
+  --text2: #4A3728;
+  --muted: #8B7355;
+  --input-bg: rgba(255,255,255,0.8);
+  --shadow: 0 8px 24px rgba(139,115,85,0.15);
+  --radius: 14px;
+  --radius-sm: 8px;
+  --radius-lg: 20px;
+  --blur: blur(10px);
+  --nav-bg: rgba(245,241,232,0.95);
+  --modal-bg: #F5F1E8;
+}
+
+/* ── Theme 4: TradingView Professional ── */
+body.theme-trading {
+  --bg: #131722;
+  --bg2: #1E222D;
+  --sidebar-bg: rgba(30,34,45,0.95);
+  --card: #1E222D;
+  --card-hover: #252934;
+  --border: rgba(255,255,255,0.06);
+  --accent: #2962FF;
+  --accent2: #00BCD4;
+  --green: #26a69a;
+  --red: #ef5350;
+  --yellow: #ffa726;
+  --purple: #7B1FA2;
+  --orange: #FB8C00;
+  --text: #D1D4DC;
+  --text2: #B2B5BE;
+  --muted: #787B86;
+  --input-bg: rgba(255,255,255,0.05);
+  --shadow: 0 4px 16px rgba(0,0,0,0.4);
+  --radius: 4px;
+  --radius-sm: 4px;
+  --radius-lg: 8px;
+  --blur: blur(0px);
+  --nav-bg: rgba(19,23,34,0.98);
+  --modal-bg: #1E222D;
+}
+
+/* ============================================
+   GLOBAL STYLES USING CSS VARIABLES
+   ============================================ */
+
+body {
+  background: var(--bg) !important;
+  color: var(--text) !important;
+  font-size: var(--font-size);
+  transition: background 0.4s ease, color 0.4s ease;
+}
+
+/* Sidebar */
+.sidebar {
+  background: var(--sidebar-bg) !important;
+  border-right-color: var(--border) !important;
+}
+
+/* Cards */
+.card, .stat-card, .sum-card, .feat-card, .goal-card,
+.budget-item, .panel-card, .theme-card, .table-card,
+.monthly-table-card, .chart-card, .top-card, .insight-card {
+  background: var(--card) !important;
+  border-color: var(--border) !important;
+  border-radius: var(--radius) !important;
+  box-shadow: var(--shadow) !important;
+  transition: var(--transition) !important;
+}
+
+.card:hover, .stat-card:hover, .goal-card:hover,
+.feat-card:hover, .budget-item:hover {
+  background: var(--card-hover) !important;
+}
+
+/* Topbar & Navbar */
+.topbar, nav {
+  background: var(--nav-bg) !important;
+  border-bottom-color: var(--border) !important;
+  backdrop-filter: var(--blur) !important;
+}
+
+/* Inputs */
+input, select, textarea {
+  background: var(--input-bg) !important;
+  border-color: var(--border) !important;
+  color: var(--text) !important;
+  border-radius: var(--radius-sm) !important;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: var(--accent) !important;
+  background: rgba(99,102,241,0.08) !important;
+}
+
+/* Buttons */
+.btn-primary, .btn-add, .btn-save, .btn-submit,
+.btn-login, .btn-signup, .btn-export, .btn-apply,
+.btn-large.primary {
+  background: var(--accent) !important;
+  border-radius: var(--radius-sm) !important;
+}
+
+/* Nav items */
+.nav-item.active {
+  background: rgba(99,102,241,0.15) !important;
+  color: var(--accent) !important;
+}
+
+body.theme-luxury .nav-item.active {
+  background: rgba(212,175,55,0.15) !important;
+  color: var(--accent) !important;
+}
+
+body.theme-beige .nav-item.active {
+  background: rgba(139,115,85,0.15) !important;
+  color: var(--accent) !important;
+}
+
+body.theme-trading .nav-item.active {
+  background: rgba(41,98,255,0.15) !important;
+  color: var(--accent) !important;
+}
+
+/* Modals */
+.modal {
+  background: var(--modal-bg) !important;
+  border-color: var(--border) !important;
+  border-radius: var(--radius-lg) !important;
+}
+
+/* Progress bars */
+.prog-fill, .progress-fill {
+  border-radius: 50px !important;
+}
+
+/* Muted text */
+.stat-lbl, .stat-label, .card-sub, .tx-cat,
+.tx-date, .tx-desc-cell, .nav-section-label,
+.user-info .email, .topbar-left p {
+  color: var(--muted) !important;
+}
+
+/* Borders */
+.border-bottom, thead th, tbody tr,
+.setting-row, .sidebar-logo, .sidebar-bottom,
+.topbar, .pagination {
+  border-color: var(--border) !important;
+}
+
+/* Luxury theme overrides */
+body.theme-luxury .sidebar-logo span,
+body.theme-luxury .logo span {
+  background: linear-gradient(90deg, #D4AF37, #F5D060) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+body.theme-luxury .sidebar-logo i,
+body.theme-luxury .logo i {
+  color: #D4AF37 !important;
+}
+
+/* Beige theme overrides */
+body.theme-beige {
+  color: #2C1810 !important;
+}
+
+body.theme-beige .sidebar {
+  border-right: 1px solid rgba(139,115,85,0.2) !important;
+}
+
+body.theme-beige .nav-item {
+  color: #8B7355 !important;
+}
+
+body.theme-beige .nav-item:hover {
+  color: #2C1810 !important;
+  background: rgba(139,115,85,0.1) !important;
+}
+
+body.theme-beige .card, body.theme-beige .stat-card {
+  box-shadow: 0 4px 12px rgba(139,115,85,0.1) !important;
+}
+
+body.theme-beige .sidebar-logo span,
+body.theme-beige .logo span {
+  background: linear-gradient(90deg, #8B7355, #A0845C) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+/* Trading theme overrides */
+body.theme-trading .card {
+  border-radius: var(--radius) !important;
+}
+
+body.theme-trading .sidebar-logo span,
+body.theme-trading .logo span {
+  background: linear-gradient(90deg, #2962FF, #00BCD4) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+body.theme-trading .sidebar-logo i {
+  color: #2962FF !important;
+}
+
+/* ============================================
+   THEME TRANSITION ANIMATION
+   ============================================ */
+body.theme-transitioning * {
+  transition: background 0.4s ease, color 0.4s ease,
+              border-color 0.4s ease, box-shadow 0.4s ease !important;
+}

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Contact — FinTrack</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <link rel="stylesheet" href="../css/style.css"/>
+  <link rel="stylesheet" href="../css/themes.css"/>
+  <link rel="stylesheet" href="../css/animations.css"/>
+  <style>
+    :root { --bg:#0F172A; --card:rgba(255,255,255,0.06); --border:rgba(255,255,255,0.08); --accent:#6366f1; --green:#22c55e; --text:#f1f5f9; --muted:#94a3b8; --input-bg:rgba(255,255,255,0.05); }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Segoe UI',sans-serif; background:var(--bg); color:var(--text); }
+    nav { position:fixed; top:0; left:0; right:0; z-index:100; display:flex; align-items:center; justify-content:space-between; padding:18px 60px; background:rgba(15,23,42,0.85); backdrop-filter:blur(20px); border-bottom:1px solid var(--border); }
+    .logo { display:flex; align-items:center; gap:10px; text-decoration:none; }
+    .logo i { color:var(--accent); font-size:22px; }
+    .logo span { font-size:18px; font-weight:700; background:linear-gradient(90deg,#6366f1,#22d3ee); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .btn-dash { padding:9px 20px; border-radius:8px; background:var(--accent); color:white; text-decoration:none; font-size:14px; font-weight:600; }
+    .content { padding:120px 60px 80px; max-width:1100px; margin:0 auto; }
+    .hero { text-align:center; margin-bottom:60px; }
+    .badge { display:inline-flex; align-items:center; gap:8px; padding:6px 16px; border-radius:50px; border:1px solid rgba(99,102,241,0.4); background:rgba(99,102,241,0.1); font-size:13px; color:#a5b4fc; margin-bottom:20px; }
+    .hero h1 { font-size:clamp(32px,5vw,52px); font-weight:800; margin-bottom:14px; }
+    .gradient { background:linear-gradient(90deg,#6366f1,#22d3ee); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .hero p { color:var(--muted); font-size:16px; max-width:500px; margin:0 auto; line-height:1.7; }
+    .contact-grid { display:grid; grid-template-columns:1fr 1fr; gap:40px; }
+    .card { background:var(--card); border:1px solid var(--border); border-radius:20px; padding:32px; }
+    .card h2 { font-size:20px; font-weight:700; margin-bottom:8px; }
+    .card p { color:var(--muted); font-size:14px; margin-bottom:28px; line-height:1.6; }
+    .form-group { margin-bottom:18px; }
+    .form-group label { display:block; font-size:13px; color:var(--muted); margin-bottom:7px; font-weight:500; }
+    .form-group input, .form-group select, .form-group textarea { width:100%; padding:12px 14px; background:var(--input-bg); border:1px solid var(--border); border-radius:10px; color:var(--text); font-size:14px; outline:none; transition:all 0.2s; font-family:inherit; resize:vertical; }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color:var(--accent); background:rgba(99,102,241,0.08); }
+    .form-group input::placeholder, .form-group textarea::placeholder { color:var(--muted); }
+    .form-group select option { background:#1e293b; }
+    .form-row { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    .btn-submit { width:100%; padding:13px; border-radius:10px; background:var(--accent); color:white; border:none; font-size:15px; font-weight:700; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; justify-content:center; gap:8px; margin-top:8px; }
+    .btn-submit:hover { background:#4f46e5; transform:translateY(-1px); }
+    .contact-info { display:flex; flex-direction:column; gap:20px; }
+    .info-item { display:flex; align-items:flex-start; gap:16px; padding:20px; background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:14px; transition:all 0.2s; }
+    .info-item:hover { border-color:rgba(99,102,241,0.3); }
+    .info-icon { width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; }
+    .info-title { font-size:14px; font-weight:700; margin-bottom:4px; }
+    .info-text { font-size:13px; color:var(--muted); line-height:1.5; }
+    .faq { margin-top:60px; }
+    .faq h2 { font-size:24px; font-weight:700; margin-bottom:24px; text-align:center; }
+    .faq-list { display:flex; flex-direction:column; gap:12px; }
+    .faq-item { background:var(--card); border:1px solid var(--border); border-radius:14px; overflow:hidden; }
+    .faq-q { display:flex; align-items:center; justify-content:space-between; padding:18px 20px; cursor:pointer; font-size:14px; font-weight:600; transition:all 0.2s; }
+    .faq-q:hover { background:rgba(255,255,255,0.04); }
+    .faq-a { padding:0 20px; max-height:0; overflow:hidden; transition:all 0.3s; font-size:13px; color:var(--muted); line-height:1.6; }
+    .faq-a.open { padding:0 20px 18px; max-height:200px; }
+    .alert { padding:12px 16px; border-radius:10px; font-size:13px; margin-bottom:16px; display:none; align-items:center; gap:8px; background:rgba(34,197,94,0.1); border:1px solid rgba(34,197,94,0.3); color:#86efac; }
+    .alert.show { display:flex; }
+    footer { padding:32px 60px; border-top:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; }
+    footer p { color:var(--muted); font-size:13px; }
+    @media(max-width:768px) { nav { padding:16px 20px; } .content { padding:100px 20px 60px; } .contact-grid { grid-template-columns:1fr; } .form-row { grid-template-columns:1fr; } footer { padding:24px 20px; flex-direction:column; gap:12px; } }
+  </style>
+</head>
+<body>
+<nav>
+  <a class="logo" href="index.html"><i class="fas fa-chart-line"></i><span>FinTrack</span></a>
+  <a class="btn-dash" href="dashboard.html">Dashboard</a>
+</nav>
+
+<div class="content">
+  <div class="hero">
+    <div class="badge"><i class="fas fa-envelope"></i> Contact Us</div>
+    <h1>Get in <span class="gradient">Touch</span></h1>
+    <p>Have a question or feedback? We'd love to hear from you. Send us a message and we'll respond as soon as possible.</p>
+  </div>
+
+  <div class="contact-grid">
+    <!-- FORM -->
+    <div class="card">
+      <h2>Send us a Message</h2>
+      <p>Fill in the form below and we'll get back to you within 24 hours.</p>
+      <div class="alert" id="successAlert"><i class="fas fa-check-circle"></i> Message sent! We'll get back to you soon.</div>
+      <div class="form-row">
+        <div class="form-group"><label>First Name</label><input type="text" placeholder="Juhi"/></div>
+        <div class="form-group"><label>Last Name</label><input type="text" placeholder="Makkar"/></div>
+      </div>
+      <div class="form-group"><label>Email Address</label><input type="email" placeholder="you@example.com"/></div>
+      <div class="form-group">
+        <label>Topic</label>
+        <select>
+          <option>General Inquiry</option>
+          <option>Bug Report</option>
+          <option>Feature Request</option>
+          <option>Account Issue</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Message</label><textarea rows="5" placeholder="Tell us how we can help..."></textarea></div>
+      <button class="btn-submit" onclick="sendMessage()"><i class="fas fa-paper-plane"></i> Send Message</button>
+    </div>
+
+    <!-- INFO -->
+    <div class="contact-info">
+      <div class="info-item">
+        <div class="info-icon" style="background:rgba(99,102,241,0.15);color:#6366f1"><i class="fas fa-envelope"></i></div>
+        <div><div class="info-title">Email Us</div><div class="info-text">juhimakkar400@gmail.com<br/>We reply within 24 hours</div></div>
+      </div>
+      <div class="info-item">
+        <div class="info-icon" style="background:rgba(34,211,238,0.15);color:#22d3ee"><i class="fab fa-github"></i></div>
+        <div><div class="info-title">GitHub</div><div class="info-text"><a href="https://github.com/Juhi-Makkar" target="_blank" style="color:inherit; text-decoration:underline;">github</a><br/>Check my projects</div></div>
+      </div>
+      <div class="info-item">
+        <div class="info-icon" style="background:rgba(34,197,94,0.15);color:#22c55e"><i class="fas fa-clock"></i></div>
+        <div><div class="info-title">Support Hours</div><div class="info-text">Monday – Friday<br/>9:00 AM – 6:00 PM IST</div></div>
+      </div>
+      <div class="info-item">
+        <div class="info-icon" style="background:rgba(251,191,36,0.15);color:#fbbf24"><i class="fas fa-location-dot"></i></div>
+        <div><div class="info-title">Location</div><div class="info-text">Jaipur, Rajasthan<br/>India 🇮🇳</div></div>
+      </div>
+      <div class="info-item">
+        <div class="info-icon" style="background:rgba(34,211,238,0.15);color:#22d3ee"><i class="fab fa-github"></i></div>
+        <div><div class="info-title">Open Source</div><div class="info-text">Found a bug? Open an issue<br/>on our GitHub repository</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FAQ -->
+  <div class="faq">
+    <h2>Frequently Asked Questions</h2>
+    <div class="faq-list">
+      <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span>Is FinTrack free to use?</span><i class="fas fa-chevron-down"></i></div><div class="faq-a">Yes! FinTrack is completely free. All features including analytics, budgets, goals and premium themes are available at no cost.</div></div>
+      <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span>Is my financial data secure?</span><i class="fas fa-chevron-down"></i></div><div class="faq-a">Absolutely. We use JWT authentication and MongoDB Atlas with industry-standard encryption. Your data is stored securely in the cloud.</div></div>
+      <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span>Can I export my data?</span><i class="fas fa-chevron-down"></i></div><div class="faq-a">Yes! You can export your transactions as CSV or PDF from the Reports page or the Settings page anytime.</div></div>
+      <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span>Does it work on mobile?</span><i class="fas fa-chevron-down"></i></div><div class="faq-a">Yes, FinTrack is fully responsive and works beautifully on phones, tablets and desktops.</div></div>
+      <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span>Can I change the currency?</span><i class="fas fa-chevron-down"></i></div><div class="faq-a">Yes! FinTrack supports ₹ INR, $ USD, € EUR and £ GBP. You can change it anytime from your Profile or Settings page.</div></div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="logo"><i class="fas fa-chart-line" style="color:var(--accent)"></i><span style="background:linear-gradient(90deg,#6366f1,#22d3ee);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:700">FinTrack</span></div>
+  <p>© 2026 FinTrack. Built with ❤️</p>
+</footer>
+
+<script src="../js/theme.js"></script>
+
+<script>
+  function sendMessage() {
+    document.getElementById('successAlert').classList.add('show');
+    setTimeout(() => document.getElementById('successAlert').classList.remove('show'), 4000);
+  }
+  function toggleFaq(el) {
+    const ans = el.nextElementSibling;
+    const icon = el.querySelector('i');
+    ans.classList.toggle('open');
+    icon.style.transform = ans.classList.contains('open') ? 'rotate(180deg)' : '';
+  }
+</script>
+</body>
+</html>
+
+<!-- fix contact details for user to contact with us -->

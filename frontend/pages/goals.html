@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Savings Goals — FinTrack</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <link rel="stylesheet" href="../css/style.css"/>
+  <link rel="stylesheet" href="../css/themes.css"/>
+  <link rel="stylesheet" href="../css/animations.css"/>
+  <style>
+    :root {
+      --bg:#0F172A; --sidebar-bg:rgba(255,255,255,0.04); --card:rgba(255,255,255,0.06);
+      --border:rgba(255,255,255,0.08); --accent:#6366f1; --green:#22c55e;
+      --red:#ef4444; --yellow:#fbbf24; --text:#f1f5f9; --muted:#94a3b8; --sidebar-width:240px;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Segoe UI',sans-serif; background:var(--bg); color:var(--text); display:flex; min-height:100vh; }
+    .sidebar { width:var(--sidebar-width); min-height:100vh; background:var(--sidebar-bg); border-right:1px solid var(--border); display:flex; flex-direction:column; position:fixed; top:0; left:0; z-index:50; backdrop-filter:blur(20px); transition:transform 0.3s; }
+    .sidebar-logo { padding:24px 20px; display:flex; align-items:center; gap:10px; border-bottom:1px solid var(--border); }
+    .sidebar-logo i { color:var(--accent); font-size:22px; }
+    .sidebar-logo span { font-size:18px; font-weight:700; background:linear-gradient(90deg,#6366f1,#22d3ee); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .sidebar-nav { flex:1; padding:16px 12px; overflow-y:auto; }
+    .nav-section-label { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; padding:12px 8px 6px; }
+    .nav-item { display:flex; align-items:center; gap:12px; padding:11px 12px; border-radius:10px; margin-bottom:2px; color:var(--muted); text-decoration:none; font-size:14px; transition:all 0.2s; cursor:pointer; }
+    .nav-item:hover { background:rgba(255,255,255,0.06); color:var(--text); }
+    .nav-item.active { background:rgba(99,102,241,0.15); color:var(--accent); }
+    .nav-item i { width:18px; text-align:center; font-size:15px; }
+    .sidebar-bottom { padding:16px 12px; border-top:1px solid var(--border); }
+    .user-card { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:10px; background:rgba(255,255,255,0.04); cursor:pointer; }
+    .avatar { width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg,#6366f1,#22d3ee); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; color:white; flex-shrink:0; }
+    .user-info .name { font-size:13px; font-weight:600; }
+    .user-info .email { font-size:11px; color:var(--muted); }
+    .main { margin-left:var(--sidebar-width); flex:1; display:flex; flex-direction:column; }
+    .topbar { display:flex; align-items:center; justify-content:space-between; padding:16px 28px; border-bottom:1px solid var(--border); background:rgba(15,23,42,0.8); backdrop-filter:blur(20px); position:sticky; top:0; z-index:40; }
+    .topbar-left h1 { font-size:20px; font-weight:700; }
+    .topbar-left p { font-size:13px; color:var(--muted); margin-top:2px; }
+    .btn-primary { display:flex; align-items:center; gap:8px; padding:9px 18px; border-radius:10px; background:var(--accent); color:white; border:none; font-size:14px; font-weight:600; cursor:pointer; transition:all 0.2s; }
+    .btn-primary:hover { background:#4f46e5; transform:translateY(-1px); }
+    .hamburger { display:none; background:none; border:none; color:var(--text); font-size:20px; cursor:pointer; }
+    .content { padding:28px; flex:1; }
+
+    /* SUMMARY */
+    .summary-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:20px; margin-bottom:28px; }
+    .sum-card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:20px; text-align:center; }
+    .sum-icon { font-size:28px; margin-bottom:8px; }
+    .sum-val { font-size:22px; font-weight:800; margin-bottom:4px; }
+    .sum-lbl { font-size:12px; color:var(--muted); }
+
+    /* GOALS GRID */
+    .goals-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:24px; margin-bottom:28px; }
+    .goal-card { background:var(--card); border:1px solid var(--border); border-radius:20px; padding:24px; transition:all 0.3s; position:relative; overflow:hidden; }
+    .goal-card:hover { transform:translateY(-4px); box-shadow:0 20px 40px rgba(0,0,0,0.3); border-color:rgba(99,102,241,0.3); }
+    .goal-card.completed { border-color:rgba(34,197,94,0.4); }
+    .goal-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; }
+    .goal-top { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:20px; }
+    .goal-icon-wrap { width:52px; height:52px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:24px; }
+    .goal-actions { display:flex; gap:6px; }
+    .icon-btn { width:30px; height:30px; border-radius:8px; border:1px solid var(--border); background:transparent; color:var(--muted); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:13px; transition:all 0.2s; }
+    .icon-btn:hover { color:var(--text); border-color:var(--accent); }
+    .goal-name { font-size:18px; font-weight:700; margin-bottom:4px; }
+    .goal-deadline { font-size:12px; color:var(--muted); display:flex; align-items:center; gap:6px; margin-bottom:20px; }
+    .prog-section { margin-bottom:16px; }
+    .prog-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+    .prog-pct { font-size:13px; font-weight:700; }
+    .prog-amounts { font-size:12px; color:var(--muted); }
+    .prog-bar { height:10px; background:rgba(255,255,255,0.08); border-radius:50px; overflow:hidden; }
+    .prog-fill { height:100%; border-radius:50px; transition:width 1s ease; }
+    .goal-footer { display:flex; justify-content:space-between; align-items:center; }
+    .goal-remaining { font-size:13px; color:var(--muted); }
+    .goal-remaining strong { color:var(--text); }
+    .goal-monthly { font-size:12px; color:var(--muted); text-align:right; }
+    .goal-monthly strong { color:var(--accent); display:block; font-size:14px; }
+    .completed-badge { display:inline-flex; align-items:center; gap:6px; padding:6px 14px; border-radius:50px; background:rgba(34,197,94,0.15); color:#22c55e; font-size:12px; font-weight:700; margin-top:12px; }
+
+    /* ADD GOAL CARD */
+    .add-goal-card { background:rgba(99,102,241,0.05); border:2px dashed rgba(99,102,241,0.3); border-radius:20px; padding:24px; display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:200px; cursor:pointer; transition:all 0.3s; text-align:center; }
+    .add-goal-card:hover { background:rgba(99,102,241,0.1); border-color:rgba(99,102,241,0.6); }
+    .add-goal-card i { font-size:36px; color:var(--accent); opacity:0.6; margin-bottom:12px; }
+    .add-goal-card p { color:var(--muted); font-size:14px; }
+
+    /* MODAL */
+    .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.7); backdrop-filter:blur(8px); z-index:100; display:none; align-items:center; justify-content:center; }
+    .modal-overlay.show { display:flex; }
+    .modal { background:#1e293b; border:1px solid var(--border); border-radius:20px; padding:32px; width:480px; max-width:95vw; max-height:90vh; overflow-y:auto; }
+    .modal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; }
+    .modal-header h3 { font-size:18px; font-weight:700; }
+    .modal-close { background:none; border:none; color:var(--muted); font-size:20px; cursor:pointer; }
+    .form-group { margin-bottom:16px; }
+    .form-group label { display:block; font-size:13px; color:var(--muted); margin-bottom:6px; }
+    .form-group input, .form-group select { width:100%; padding:11px 14px; background:rgba(255,255,255,0.05); border:1px solid var(--border); border-radius:10px; color:var(--text); font-size:14px; outline:none; transition:all 0.2s; }
+    .form-group input:focus, .form-group select:focus { border-color:var(--accent); background:rgba(99,102,241,0.08); }
+    .form-group select option { background:#1e293b; }
+    .form-row { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    .emoji-grid { display:grid; grid-template-columns:repeat(8,1fr); gap:8px; }
+    .emoji-btn { width:38px; height:38px; border-radius:8px; border:1px solid var(--border); background:transparent; font-size:18px; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; justify-content:center; }
+    .emoji-btn:hover, .emoji-btn.selected { background:rgba(99,102,241,0.2); border-color:var(--accent); }
+    .btn-submit { width:100%; padding:13px; border-radius:10px; border:none; font-size:15px; font-weight:700; background:var(--accent); color:white; cursor:pointer; transition:all 0.2s; margin-top:8px; }
+    .btn-submit:hover { background:#4f46e5; }
+    .btn-danger { background:rgba(239,68,68,0.1); color:var(--red); border:1px solid rgba(239,68,68,0.3); padding:11px; border-radius:10px; cursor:pointer; font-size:14px; width:100%; margin-top:8px; transition:all 0.2s; }
+    .btn-danger:hover { background:rgba(239,68,68,0.2); }
+
+    /* ADD SAVINGS MODAL */
+    .add-savings-modal { background:#1e293b; border:1px solid var(--border); border-radius:20px; padding:32px; width:400px; max-width:95vw; }
+
+    .sidebar-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:49; }
+    @media(max-width:768px) {
+      .sidebar { transform:translateX(-100%); } .sidebar.open { transform:translateX(0); }
+      .sidebar-overlay.show { display:block; } .main { margin-left:0; } .hamburger { display:block; }
+      .content { padding:16px; } .topbar { padding:12px 16px; }
+      .summary-grid { grid-template-columns:1fr 1fr; }
+      .goals-grid { grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo"><i class="fas fa-chart-line"></i><span>FinTrack</span></div>
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Main</div>
+    <a class="nav-item" href="dashboard.html"><i class="fas fa-house"></i> Dashboard</a>
+    <a class="nav-item" href="transactions.html"><i class="fas fa-arrow-right-arrow-left"></i> Transactions</a>
+    <a class="nav-item" href="income.html"><i class="fas fa-arrow-trend-up"></i> Income</a>
+    <a class="nav-item" href="expenses.html"><i class="fas fa-arrow-trend-down"></i> Expenses</a>
+    <div class="nav-section-label">Planning</div>
+    <a class="nav-item" href="budget.html"><i class="fas fa-wallet"></i> Budget Planner</a>
+    <a class="nav-item active" href="goals.html"><i class="fas fa-bullseye"></i> Savings Goals</a>
+    <a class="nav-item" href="recurring.html"><i class="fas fa-rotate"></i> Recurring</a>
+    <a class="nav-item" href="calendar.html"><i class="fas fa-calendar-days"></i> Calendar</a>
+    <div class="nav-section-label">Analytics</div>
+    <a class="nav-item" href="reports.html"><i class="fas fa-chart-pie"></i> Reports</a>
+    <div class="nav-section-label">Account</div>
+    <a class="nav-item" href="profile.html"><i class="fas fa-user"></i> Profile</a>
+    <a class="nav-item" href="settings.html"><i class="fas fa-gear"></i> Settings</a>
+    <a class="nav-item" href="appearance.html"><i class="fas fa-palette"></i> Themes</a>
+    <a class="nav-item" onclick="logout()"><i class="fas fa-right-from-bracket"></i> Logout</a>
+  </nav>
+  <div class="sidebar-bottom">
+    <div class="user-card">
+      <div class="avatar" id="sidebarAvatar">J</div>
+      <div class="user-info">
+        <div class="name" id="sidebarName">Loading...</div>
+        <div class="email" id="sidebarEmail">...</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:14px">
+      <button class="hamburger" onclick="openSidebar()"><i class="fas fa-bars"></i></button>
+      <div class="topbar-left">
+        <h1>Savings Goals</h1>
+        <p>Track your dreams and make them reality</p>
+      </div>
+    </div>
+    <button class="btn-primary" onclick="openModal()"><i class="fas fa-plus"></i> New Goal</button>
+  </div>
+
+  <div class="content">
+    <!-- SUMMARY -->
+    <div class="summary-grid">
+      <div class="sum-card">
+        <div class="sum-icon">🎯</div>
+        <div class="sum-val" style="color:#6366f1" id="sumGoals">0</div>
+        <div class="sum-lbl">Total Goals</div>
+      </div>
+      <div class="sum-card">
+        <div class="sum-icon">💰</div>
+        <div class="sum-val" style="color:#22c55e" id="sumSaved">₹0</div>
+        <div class="sum-lbl">Total Saved</div>
+      </div>
+      <div class="sum-card">
+        <div class="sum-icon">🏆</div>
+        <div class="sum-val" style="color:#fbbf24" id="sumCompleted">0</div>
+        <div class="sum-lbl">Completed</div>
+      </div>
+      <div class="sum-card">
+        <div class="sum-icon">📈</div>
+        <div class="sum-val" style="color:#22d3ee" id="sumTarget">₹0</div>
+        <div class="sum-lbl">Total Target</div>
+      </div>
+    </div>
+
+    <!-- GOALS GRID -->
+    <div class="goals-grid" id="goalsGrid"></div>
+  </div>
+</div>
+
+<!-- GOAL MODAL -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modalTitle">Create New Goal</h3>
+      <button class="modal-close" onclick="closeModal()"><i class="fas fa-xmark"></i></button>
+    </div>
+    <div class="form-group">
+      <label>Goal Name</label>
+      <input type="text" id="gName" placeholder="e.g. New Bike, Vacation, Laptop"/>
+    </div>
+    <div class="form-group">
+      <label>Choose Icon</label>
+      <div class="emoji-grid" id="emojiGrid"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Target Amount (₹)</label>
+        <input type="number" id="gTarget" placeholder="e.g. 80000" min="0"/>
+      </div>
+      <div class="form-group">
+        <label>Already Saved (₹)</label>
+        <input type="number" id="gSaved" placeholder="e.g. 10000" min="0" value="0"/>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Target Date</label>
+        <input type="date" id="gDate"/>
+      </div>
+      <div class="form-group">
+        <label>Color Theme</label>
+        <select id="gColor">
+          <option value="purple">Purple</option>
+          <option value="green">Green</option>
+          <option value="blue">Blue</option>
+          <option value="orange">Orange</option>
+          <option value="pink">Pink</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn-submit" onclick="saveGoal()">Save Goal</button>
+    <button class="btn-danger" id="gDeleteBtn" onclick="deleteGoal()" style="display:none"><i class="fas fa-trash"></i> Delete Goal</button>
+  </div>
+</div>
+
+<!-- ADD SAVINGS MODAL -->
+<div class="modal-overlay" id="savingsModalOverlay">
+  <div class="add-savings-modal">
+    <div class="modal-header">
+      <h3>Add Savings</h3>
+      <button class="modal-close" onclick="closeSavingsModal()"><i class="fas fa-xmark"></i></button>
+    </div>
+    <div class="form-group">
+      <label>Amount to Add (₹)</label>
+      <input type="number" id="addAmount" placeholder="e.g. 5000" min="0"/>
+    </div>
+    <div class="form-group">
+      <label>Note (optional)</label>
+      <input type="text" id="addNote" placeholder="e.g. Monthly savings"/>
+    </div>
+    <button class="btn-submit" onclick="confirmAddSavings()">Add to Goal</button>
+  </div>
+</div>
+
+<script src="../js/theme.js"></script>
+<script src="../js/api.js"></script>
+
+<script>
+const EMOJIS = [
+  '🏍️','💻','✈️','🏠','🚗','📱','🎓','💍','🏖️','🛡️','🎮','📷','⌚',
+  '🎸','🏋️','🌍','💎','🎯','🚀','🏆','🛒','📚','🎨','🌱'
+];
+
+const COLORS = {
+  purple: 'linear-gradient(135deg,#6366f1,#a855f7)',
+  green: 'linear-gradient(135deg,#22c55e,#22d3ee)',
+  blue: 'linear-gradient(135deg,#3b82f6,#6366f1)',
+  orange: 'linear-gradient(135deg,#f97316,#fbbf24)',
+  pink: 'linear-gradient(135deg,#ec4899,#f97316)'
+};
+
+const COLOR_SOLID = {
+  purple: '#6366f1',
+  green: '#22c55e',
+  blue: '#3b82f6',
+  orange: '#f97316',
+  pink: '#ec4899'
+};
+
+let goals = [];
+let editingId = null;
+let addingToId = null;
+let selectedEmoji = '🎯';
+
+document.addEventListener('DOMContentLoaded', () => {
+  checkAuth();
+  renderEmojis();
+  loadGoals();
+
+  const modalOverlay = document.getElementById('modalOverlay');
+  const savingsModalOverlay = document.getElementById('savingsModalOverlay');
+
+  if (modalOverlay) {
+    modalOverlay.addEventListener('click', (event) => {
+      if (event.target === modalOverlay) closeModal();
+    });
+  }
+
+  if (savingsModalOverlay) {
+    savingsModalOverlay.addEventListener('click', (event) => {
+      if (event.target === savingsModalOverlay) closeSavingsModal();
+    });
+  }
+});
+
+function checkAuth() {
+  const user = JSON.parse(localStorage.getItem('user') || 'null');
+  const token = localStorage.getItem('token');
+
+  if (!user || !token) {
+    window.location.href = 'login.html';
+    return;
+  }
+
+  const initials = ((user.firstName?.[0] || '') + (user.lastName?.[0] || '')).toUpperCase() || 'U';
+  document.getElementById('sidebarAvatar').textContent = initials;
+  document.getElementById('sidebarName').textContent = `${user.firstName || ''} ${user.lastName || ''}`.trim();
+  document.getElementById('sidebarEmail').textContent = user.email || '';
+}
+
+function logout() {
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+  window.location.href = 'login.html';
+}
+
+async function loadGoals() {
+  try {
+    const data = await Goals.getAll();
+    goals = Array.isArray(data) ? data : [];
+  } catch (error) {
+    console.error('Unable to fetch goals', error);
+    goals = [];
+  }
+
+  renderGoals();
+}
+
+function renderGoals() {
+  const grid = document.getElementById('goalsGrid');
+  if (!grid) return;
+
+  let totalSaved = 0;
+  let totalTarget = 0;
+  let completed = 0;
+
+  goals.forEach((goal) => {
+    const saved = Number(goal.saved || 0);
+    const target = Number(goal.target || 0);
+    totalSaved += saved;
+    totalTarget += target;
+    if (target > 0 && saved >= target) completed += 1;
+  });
+
+  document.getElementById('sumGoals').textContent = goals.length;
+  document.getElementById('sumSaved').textContent = formatCurrency(totalSaved);
+  document.getElementById('sumCompleted').textContent = completed;
+  document.getElementById('sumTarget').textContent = formatCurrency(totalTarget);
+
+  grid.innerHTML = goals.map((goal) => renderGoalCard(goal)).join('');
+  grid.innerHTML += `
+    <div class="add-goal-card" onclick="openModal()">
+      <i class="fas fa-plus"></i>
+      <p>Create a new savings goal</p>
+    </div>
+  `;
+}
+
+function renderGoalCard(goal) {
+  const saved = Number(goal.saved || 0);
+  const target = Number(goal.target || 0);
+  const pct = target > 0 ? Math.min(Math.round((saved / target) * 100), 100) : 0;
+  const done = target > 0 && saved >= target;
+  const remaining = Math.max(target - saved, 0);
+  const deadline = goal.deadline ? new Date(goal.deadline) : null;
+  const monthsLeft = deadline ? Math.max(Math.ceil((deadline - new Date()) / (1000 * 60 * 60 * 24 * 30)), 1) : 12;
+  const monthly = remaining > 0 ? Math.ceil(remaining / monthsLeft) : 0;
+  const deadlineStr = deadline
+    ? deadline.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+    : 'No deadline';
+  const color = COLOR_SOLID[goal.color] || '#6366f1';
+  const gradient = COLORS[goal.color] || COLORS.purple;
+  const iconBg = gradient.replace('linear-gradient(135deg,', '').split(',')[0].replace(')', '').trim() + '22';
+  const id = goal._id || goal.id;
+
+  return `
+    <div class="goal-card ${done ? 'completed' : ''}">
+      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:${gradient}"></div>
+      <div class="goal-top">
+        <div class="goal-icon-wrap" style="background:${iconBg};">${goal.emoji || '🎯'}</div>
+        <div class="goal-actions">
+          ${!done ? `<button class="icon-btn" onclick="openSavingsModal('${id}')" title="Add savings"><i class="fas fa-plus"></i></button>` : ''}
+          <button class="icon-btn" onclick="editGoal('${id}')" title="Edit"><i class="fas fa-pen"></i></button>
+        </div>
+      </div>
+      <div class="goal-name">${escapeHtml(goal.name || 'Untitled Goal')}</div>
+      <div class="goal-deadline"><i class="fas fa-calendar"></i> ${deadlineStr}</div>
+      <div class="prog-section">
+        <div class="prog-header">
+          <span class="prog-pct" style="color:${color};">${pct}%</span>
+          <span class="prog-amounts">${formatCurrency(saved)} / ${formatCurrency(target)}</span>
+        </div>
+        <div class="prog-bar"><div class="prog-fill" style="width:${pct}%;background:${gradient};"></div></div>
+      </div>
+      ${done ? `<div class="completed-badge"><i class="fas fa-trophy"></i> Goal Achieved! 🎉</div>` : `
+      <div class="goal-footer">
+        <div class="goal-remaining">Remaining: <strong>${formatCurrency(remaining)}</strong></div>
+        <div class="goal-monthly"><span>Monthly needed</span><strong style="color:${color};">${formatCurrency(monthly)}</strong></div>
+      </div>`}
+    </div>
+  `;
+}
+
+function renderEmojis() {
+  document.getElementById('emojiGrid').innerHTML = EMOJIS.map((emoji) => `
+    <button type="button" class="emoji-btn ${emoji === selectedEmoji ? 'selected' : ''}" onclick="selectEmoji('${emoji}', this)">${emoji}</button>
+  `).join('');
+}
+
+function selectEmoji(emoji, button) {
+  selectedEmoji = emoji;
+  document.querySelectorAll('.emoji-btn').forEach((btn) => btn.classList.remove('selected'));
+  button.classList.add('selected');
+}
+
+function openModal(id = null) {
+  editingId = id;
+  document.getElementById('modalTitle').textContent = id ? 'Edit Goal' : 'Create New Goal';
+  document.getElementById('gDeleteBtn').style.display = id ? 'block' : 'none';
+
+  if (id) {
+    const goal = goals.find((item) => (item._id || item.id) === id);
+    if (!goal) return;
+    document.getElementById('gName').value = goal.name || '';
+    document.getElementById('gTarget').value = goal.target || '';
+    document.getElementById('gSaved').value = goal.saved || 0;
+    document.getElementById('gDate').value = goal.deadline ? new Date(goal.deadline).toISOString().split('T')[0] : '';
+    document.getElementById('gColor').value = goal.color || 'purple';
+    selectedEmoji = goal.emoji || '🎯';
+  } else {
+    document.getElementById('gName').value = '';
+    document.getElementById('gTarget').value = '';
+    document.getElementById('gSaved').value = '0';
+    document.getElementById('gDate').value = '';
+    document.getElementById('gColor').value = 'purple';
+    selectedEmoji = '🎯';
+  }
+
+  renderEmojis();
+  document.getElementById('modalOverlay').classList.add('show');
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('show');
+  editingId = null;
+}
+
+async function saveGoal() {
+  const name = document.getElementById('gName').value.trim();
+  const target = Number(document.getElementById('gTarget').value);
+  const saved = Number(document.getElementById('gSaved').value) || 0;
+  const deadline = document.getElementById('gDate').value || null;
+  const color = document.getElementById('gColor').value;
+
+  if (!name || !target || target <= 0) {
+    alert('Please provide a valid name and target amount.');
+    return;
+  }
+
+  const payload = {
+    name,
+    emoji: selectedEmoji,
+    target,
+    saved,
+    deadline,
+    color
+  };
+
+  try {
+    if (editingId) {
+      await Goals.update(editingId, payload);
+    } else {
+      await Goals.add(payload);
+    }
+    closeModal();
+    await loadGoals();
+  } catch (error) {
+    console.error('Error saving goal:', error);
+    alert(error.message || 'Unable to save goal.');
+  }
+}
+
+async function deleteGoal() {
+  if (!editingId || !confirm('Delete this goal?')) return;
+
+  try {
+    await Goals.delete(editingId);
+    closeModal();
+    await loadGoals();
+  } catch (error) {
+    console.error('Error deleting goal:', error);
+    alert(error.message || 'Unable to delete goal.');
+  }
+}
+
+function editGoal(id) {
+  openModal(id);
+}
+
+function openSavingsModal(id) {
+  addingToId = id;
+  document.getElementById('addAmount').value = '';
+  document.getElementById('addNote').value = '';
+  document.getElementById('savingsModalOverlay').classList.add('show');
+}
+
+function closeSavingsModal() {
+  document.getElementById('savingsModalOverlay').classList.remove('show');
+  addingToId = null;
+}
+
+async function confirmAddSavings() {
+  const amount = Number(document.getElementById('addAmount').value);
+  if (!amount || amount <= 0) {
+    alert('Enter a valid amount.');
+    return;
+  }
+
+  try {
+    await Goals.addSavings(addingToId, amount);
+    closeSavingsModal();
+    await loadGoals();
+  } catch (error) {
+    console.error('Error adding savings:', error);
+    alert(error.message || 'Unable to add savings.');
+  }
+}
+
+function formatCurrency(value) {
+  return '₹' + Number(value || 0).toLocaleString('en-IN', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2
+  });
+}
+
+function escapeHtml(value) {
+  return String(value || '').replace(/[&<>'"]/g, (char) => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    "'": '&#39;',
+    '"': '&quot;'
+  }[char]));
+}
+</script>
+</body>
+</html>
+
+<!-- done -->

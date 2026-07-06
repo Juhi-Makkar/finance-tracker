@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Profile — FinTrack</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <link rel="stylesheet" href="../css/style.css"/>
+  <link rel="stylesheet" href="../css/themes.css"/>
+  <link rel="stylesheet" href="../css/animations.css"/>
+  <style>
+    :root { --bg:#0F172A; --sidebar-bg:rgba(255,255,255,0.04); --card:rgba(255,255,255,0.06); --border:rgba(255,255,255,0.08); --accent:#6366f1; --green:#22c55e; --red:#ef4444; --yellow:#fbbf24; --text:#f1f5f9; --muted:#94a3b8; --sidebar-width:240px; }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Segoe UI',sans-serif; background:var(--bg); color:var(--text); display:flex; min-height:100vh; }
+    .sidebar { width:var(--sidebar-width); min-height:100vh; background:var(--sidebar-bg); border-right:1px solid var(--border); display:flex; flex-direction:column; position:fixed; top:0; left:0; z-index:50; backdrop-filter:blur(20px); transition:transform 0.3s; }
+    .sidebar-logo { padding:24px 20px; display:flex; align-items:center; gap:10px; border-bottom:1px solid var(--border); }
+    .sidebar-logo i { color:var(--accent); font-size:22px; }
+    .sidebar-logo span { font-size:18px; font-weight:700; background:linear-gradient(90deg,#6366f1,#22d3ee); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .sidebar-nav { flex:1; padding:16px 12px; overflow-y:auto; }
+    .nav-section-label { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; padding:12px 8px 6px; }
+    .nav-item { display:flex; align-items:center; gap:12px; padding:11px 12px; border-radius:10px; margin-bottom:2px; color:var(--muted); text-decoration:none; font-size:14px; transition:all 0.2s; cursor:pointer; }
+    .nav-item:hover { background:rgba(255,255,255,0.06); color:var(--text); }
+    .nav-item.active { background:rgba(99,102,241,0.15); color:var(--accent); }
+    .nav-item i { width:18px; text-align:center; font-size:15px; }
+    .sidebar-bottom { padding:16px 12px; border-top:1px solid var(--border); }
+    .user-card { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:10px; background:rgba(255,255,255,0.04); cursor:pointer; }
+    .avatar-sm { width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg,#6366f1,#22d3ee); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; color:white; flex-shrink:0; }
+    .user-info .name { font-size:13px; font-weight:600; }
+    .user-info .email { font-size:11px; color:var(--muted); }
+    .main { margin-left:var(--sidebar-width); flex:1; display:flex; flex-direction:column; }
+    .topbar { display:flex; align-items:center; justify-content:space-between; padding:16px 28px; border-bottom:1px solid var(--border); background:rgba(15,23,42,0.8); backdrop-filter:blur(20px); position:sticky; top:0; z-index:40; }
+    .topbar-left h1 { font-size:20px; font-weight:700; }
+    .topbar-left p { font-size:13px; color:var(--muted); margin-top:2px; }
+    .hamburger { display:none; background:none; border:none; color:var(--text); font-size:20px; cursor:pointer; }
+    .content { padding:28px; flex:1; }
+    .profile-grid { display:grid; grid-template-columns:300px 1fr; gap:24px; }
+    .card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:24px; margin-bottom:20px; }
+    .card:last-child { margin-bottom:0; }
+    .card-title { font-size:16px; font-weight:700; margin-bottom:20px; display:flex; align-items:center; gap:8px; }
+    .avatar-large { width:90px; height:90px; border-radius:50%; background:linear-gradient(135deg,#6366f1,#22d3ee); display:flex; align-items:center; justify-content:center; font-size:32px; font-weight:700; color:white; margin:0 auto 16px; }
+    .profile-name { font-size:20px; font-weight:700; text-align:center; margin-bottom:4px; }
+    .profile-email { font-size:13px; color:var(--muted); text-align:center; margin-bottom:16px; }
+    .profile-badge { display:inline-flex; align-items:center; gap:6px; padding:5px 14px; border-radius:50px; background:rgba(99,102,241,0.15); color:var(--accent); font-size:12px; font-weight:600; margin:0 auto; display:flex; justify-content:center; }
+    .profile-stats { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:20px; }
+    .p-stat { background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:12px; padding:14px; text-align:center; }
+    .p-stat-val { font-size:18px; font-weight:800; margin-bottom:4px; }
+    .p-stat-lbl { font-size:11px; color:var(--muted); }
+    .form-group { margin-bottom:18px; }
+    .form-group label { display:block; font-size:13px; color:var(--muted); margin-bottom:7px; font-weight:500; }
+    .form-group input, .form-group select { width:100%; padding:12px 14px; background:rgba(255,255,255,0.05); border:1px solid var(--border); border-radius:10px; color:var(--text); font-size:14px; outline:none; transition:all 0.2s; }
+    .form-group input:focus, .form-group select:focus { border-color:var(--accent); background:rgba(99,102,241,0.08); }
+    .form-group input::placeholder { color:var(--muted); }
+    .form-group select option { background:#1e293b; }
+    .form-row { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    .btn-save { padding:12px 28px; border-radius:10px; background:var(--accent); color:white; border:none; font-size:14px; font-weight:600; cursor:pointer; transition:all 0.2s; display:inline-flex; align-items:center; gap:8px; }
+    .btn-save:hover { background:#4f46e5; transform:translateY(-1px); }
+    .btn-danger { padding:12px 28px; border-radius:10px; background:rgba(239,68,68,0.1); color:var(--red); border:1px solid rgba(239,68,68,0.3); font-size:14px; font-weight:600; cursor:pointer; transition:all 0.2s; display:inline-flex; align-items:center; gap:8px; }
+    .btn-danger:hover { background:rgba(239,68,68,0.2); }
+    .input-wrap { position:relative; }
+    .input-wrap input { padding-right:44px; }
+    .toggle-eye { position:absolute; right:14px; top:50%; transform:translateY(-50%); color:var(--muted); cursor:pointer; font-size:14px; }
+    .alert { padding:12px 16px; border-radius:10px; font-size:13px; margin-bottom:16px; display:none; align-items:center; gap:8px; }
+    .alert.show { display:flex; }
+    .alert-success { background:rgba(34,197,94,0.1); border:1px solid rgba(34,197,94,0.3); color:#86efac; }
+    .alert-error { background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); color:#fca5a5; }
+    .activity-list { display:flex; flex-direction:column; gap:10px; }
+    .activity-item { display:flex; align-items:center; gap:12px; padding:10px; background:rgba(255,255,255,0.03); border-radius:10px; }
+    .activity-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+    .activity-text { font-size:13px; flex:1; }
+    .activity-time { font-size:11px; color:var(--muted); }
+    .sidebar-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:49; }
+    @media(max-width:1024px) { .profile-grid { grid-template-columns:1fr; } }
+    @media(max-width:768px) { .sidebar { transform:translateX(-100%); } .sidebar.open { transform:translateX(0); } .sidebar-overlay.show { display:block; } .main { margin-left:0; } .hamburger { display:block; } .content { padding:16px; } .topbar { padding:12px 16px; } .form-row { grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo"><i class="fas fa-chart-line"></i><span>FinTrack</span></div>
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Main</div>
+    <a class="nav-item" href="dashboard.html"><i class="fas fa-house"></i> Dashboard</a>
+    <a class="nav-item" href="transactions.html"><i class="fas fa-arrow-right-arrow-left"></i> Transactions</a>
+    <a class="nav-item" href="income.html"><i class="fas fa-arrow-trend-up"></i> Income</a>
+    <a class="nav-item" href="expenses.html"><i class="fas fa-arrow-trend-down"></i> Expenses</a>
+    <div class="nav-section-label">Planning</div>
+    <a class="nav-item" href="budget.html"><i class="fas fa-wallet"></i> Budget Planner</a>
+    <a class="nav-item" href="goals.html"><i class="fas fa-bullseye"></i> Savings Goals</a>
+    <a class="nav-item" href="recurring.html"><i class="fas fa-rotate"></i> Recurring</a>
+    <a class="nav-item" href="calendar.html"><i class="fas fa-calendar-days"></i> Calendar</a>
+    <div class="nav-section-label">Analytics</div>
+    <a class="nav-item" href="reports.html"><i class="fas fa-chart-pie"></i> Reports</a>
+    <div class="nav-section-label">Account</div>
+    <a class="nav-item active" href="profile.html"><i class="fas fa-user"></i> Profile</a>
+    <a class="nav-item" href="settings.html"><i class="fas fa-gear"></i> Settings</a>
+    <a class="nav-item" href="appearance.html"><i class="fas fa-palette"></i> Themes</a>
+    <a class="nav-item" onclick="logout()"><i class="fas fa-right-from-bracket"></i> Logout</a>
+  </nav>
+  <div class="sidebar-bottom">
+    <div class="user-card">
+      <div class="avatar-sm" id="sidebarAvatar">J</div>
+      <div class="user-info"><div class="name" id="sidebarName">Loading...</div><div class="email" id="sidebarEmail">...</div></div>
+    </div>
+  </div>
+</aside>
+<div class="main">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:14px">
+      <button class="hamburger" onclick="openSidebar()"><i class="fas fa-bars"></i></button>
+      <div class="topbar-left"><h1>My Profile</h1><p>Manage your personal information</p></div>
+    </div>
+  </div>
+  <div class="content">
+    <div class="profile-grid">
+      <!-- LEFT -->
+      <div>
+        <div class="card" style="text-align:center">
+          <div class="avatar-large" id="profileAvatar">J</div>
+          <div class="profile-name" id="profileName">Loading...</div>
+          <div class="profile-email" id="profileEmail">...</div>
+          <div class="profile-badge"><i class="fas fa-star"></i> FinTrack Member</div>
+          <div class="profile-stats">
+            <div class="p-stat"><div class="p-stat-val" style="color:var(--green)" id="psTx">0</div><div class="p-stat-lbl">Transactions</div></div>
+            <div class="p-stat"><div class="p-stat-val" style="color:var(--accent)" id="psGoals">0</div><div class="p-stat-lbl">Goals</div></div>
+            <div class="p-stat"><div class="p-stat-val" style="color:var(--yellow)" id="psBudgets">0</div><div class="p-stat-lbl">Budgets</div></div>
+            <div class="p-stat"><div class="p-stat-val" style="color:var(--green)" id="psSaved">₹0</div><div class="p-stat-lbl">Total Saved</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title"><i class="fas fa-clock" style="color:var(--accent)"></i> Recent Activity</div>
+          <div class="activity-list" id="activityList"><p style="color:var(--muted);font-size:13px">No activity yet</p></div>
+        </div>
+      </div>
+      <!-- RIGHT -->
+      <div>
+        <div class="card">
+          <div class="card-title"><i class="fas fa-user-pen" style="color:var(--accent)"></i> Personal Information</div>
+          <div class="alert alert-success" id="profileAlert"><i class="fas fa-check-circle"></i> Profile updated!</div>
+          <div class="form-row">
+            <div class="form-group"><label>First Name</label><input type="text" id="editFirst" placeholder="First name"/></div>
+            <div class="form-group"><label>Last Name</label><input type="text" id="editLast" placeholder="Last name"/></div>
+          </div>
+          <div class="form-group"><label>Email Address</label><input type="email" id="editEmail" placeholder="your@email.com"/></div>
+          <div class="form-group"><label>Phone Number</label><input type="tel" id="editPhone" placeholder="+91 98765 43210"/></div>
+          <div class="form-row">
+            <div class="form-group"><label>Currency</label>
+              <select id="editCurrency"><option value="INR">₹ INR</option><option value="USD">$ USD</option><option value="EUR">€ EUR</option><option value="GBP">£ GBP</option></select>
+            </div>
+            <div class="form-group"><label>Member Since</label><input type="text" id="memberSince" readonly style="color:var(--muted)"/></div>
+          </div>
+          <button class="btn-save" onclick="saveProfile()"><i class="fas fa-floppy-disk"></i> Save Changes</button>
+        </div>
+        <div class="card">
+          <div class="card-title"><i class="fas fa-lock" style="color:var(--yellow)"></i> Change Password</div>
+          <div class="alert alert-success" id="passAlert"><i class="fas fa-check-circle"></i> Password changed!</div>
+          <div class="alert alert-error" id="passError"><i class="fas fa-circle-exclamation"></i> <span id="passErrText">Error</span></div>
+          <div class="form-group"><label>Current Password</label><div class="input-wrap"><input type="password" id="curPass" placeholder="Current password"/><i class="fas fa-eye toggle-eye" onclick="toggleEye('curPass',this)"></i></div></div>
+          <div class="form-group"><label>New Password</label><div class="input-wrap"><input type="password" id="newPass" placeholder="Min. 6 characters"/><i class="fas fa-eye toggle-eye" onclick="toggleEye('newPass',this)"></i></div></div>
+          <div class="form-group"><label>Confirm Password</label><div class="input-wrap"><input type="password" id="confPass" placeholder="Repeat password"/><i class="fas fa-eye toggle-eye" onclick="toggleEye('confPass',this)"></i></div></div>
+          <button class="btn-save" onclick="changePassword()"><i class="fas fa-key"></i> Change Password</button>
+        </div>
+        <div class="card">
+          <div class="card-title"><i class="fas fa-triangle-exclamation" style="color:var(--red)"></i> Danger Zone</div>
+          <p style="font-size:13px;color:var(--muted);margin-bottom:16px">These actions cannot be undone.</p>
+          <div style="display:flex;gap:12px;flex-wrap:wrap">
+            <button class="btn-danger" onclick="clearData()"><i class="fas fa-trash"></i> Clear All Data</button>
+            <button class="btn-danger" onclick="logout()"><i class="fas fa-right-from-bracket"></i> Logout</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="../js/theme.js"></script>
+<script src="../js/api.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => { initProfilePage(); });
+
+  async function initProfilePage() {
+    redirectIfNotLoggedIn();
+    await loadProfile();
+    await loadStats();
+    await loadActivity();
+  }
+
+  async function loadProfile() {
+    try {
+      const user = await Auth.getMe();
+      localStorage.setItem('user', JSON.stringify(user));
+      const init = ((user.firstName?.[0] || '') + (user.lastName?.[0] || '')).toUpperCase() || 'U';
+      document.getElementById('sidebarAvatar').textContent = init;
+      document.getElementById('profileAvatar').textContent = init;
+      document.getElementById('sidebarName').textContent = `${user.firstName} ${user.lastName}`;
+      document.getElementById('sidebarEmail').textContent = user.email;
+      document.getElementById('profileName').textContent = `${user.firstName} ${user.lastName}`;
+      document.getElementById('profileEmail').textContent = user.email;
+      document.getElementById('editFirst').value = user.firstName || '';
+      document.getElementById('editLast').value = user.lastName || '';
+      document.getElementById('editEmail').value = user.email || '';
+      document.getElementById('editPhone').value = user.phone || '';
+      document.getElementById('editCurrency').value = user.currency || 'INR';
+      document.getElementById('memberSince').value = user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-IN',{month:'long',year:'numeric'}) : '';
+    } catch (error) {
+      logout();
+    }
+  }
+
+  async function loadStats() {
+    try {
+      const [transactions, goals, budgets] = await Promise.all([
+        Transactions.getAll({ limit: 10000 }),
+        Goals.getAll(),
+        Budgets.getAll(),
+      ]);
+      document.getElementById('psTx').textContent = transactions.length;
+      document.getElementById('psGoals').textContent = goals.length;
+      document.getElementById('psBudgets').textContent = budgets.length;
+      document.getElementById('psSaved').textContent = '₹' + goals.reduce((sum, g) => sum + Number(g.saved || 0), 0).toLocaleString('en-IN');
+    } catch (error) {
+      console.error('Error loading stats', error);
+      document.getElementById('psTx').textContent = '0';
+      document.getElementById('psGoals').textContent = '0';
+      document.getElementById('psBudgets').textContent = '0';
+      document.getElementById('psSaved').textContent = '₹0';
+    }
+  }
+
+  async function loadActivity() {
+    try {
+      const transactions = await Transactions.getAll({ limit: 10000 });
+      const recent = [...transactions].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 5);
+      const list = document.getElementById('activityList');
+      if (!recent.length) {
+        list.innerHTML = '<p style="color:var(--muted);font-size:13px">No recent activity</p>';
+        return;
+      }
+      list.innerHTML = recent.map(t => `<div class="activity-item"><div class="activity-dot" style="background:${t.type==='income'?'#22c55e':'#ef4444'}"></div><div class="activity-text">${t.category || t.description || 'Transaction'}</div><div class="activity-time">${new Date(t.date).toLocaleDateString('en-IN',{day:'numeric',month:'short'})}</div></div>`).join('');
+    } catch (error) {
+      console.error('Error loading activity', error);
+      document.getElementById('activityList').innerHTML = '<p style="color:var(--muted);font-size:13px">Unable to load recent activity.</p>';
+    }
+  }
+
+  async function saveProfile() {
+    const updates = {
+      firstName: document.getElementById('editFirst').value.trim(),
+      lastName: document.getElementById('editLast').value.trim(),
+      email: document.getElementById('editEmail').value.trim(),
+      phone: document.getElementById('editPhone').value.trim(),
+      currency: document.getElementById('editCurrency').value,
+    };
+    try {
+      const data = await Auth.updateProfile(updates);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      await loadProfile();
+      showAlert('profileAlert');
+    } catch (error) {
+      console.error('Save profile failed', error);
+      alert(error.message || 'Could not save profile.');
+    }
+  }
+
+  async function changePassword() {
+    const cur = document.getElementById('curPass').value;
+    const np = document.getElementById('newPass').value;
+    const cp = document.getElementById('confPass').value;
+    if (!cur || !np || !cp) { showErr('All fields required.'); return; }
+    if (np !== cp) { showErr('Passwords do not match.'); return; }
+    if (np.length < 6) { showErr('Min. 6 characters.'); return; }
+    try {
+      await Auth.changePassword({ currentPassword: cur, newPassword: np });
+      showAlert('passAlert');
+      document.getElementById('curPass').value = '';
+      document.getElementById('newPass').value = '';
+      document.getElementById('confPass').value = '';
+    } catch (error) {
+      showErr(error.message || 'Error changing password.');
+    }
+  }
+
+  function showAlert(id) { const el = document.getElementById(id); el.classList.add('show'); setTimeout(() => el.classList.remove('show'), 3000); }
+  function showErr(msg) { document.getElementById('passErrText').textContent = msg; const el = document.getElementById('passError'); el.classList.add('show'); setTimeout(() => el.classList.remove('show'), 3000); }
+  function toggleEye(id,icon) { const inp = document.getElementById(id); inp.type = inp.type==='password'?'text':'password'; icon.classList.toggle('fa-eye'); icon.classList.toggle('fa-eye-slash'); }
+  function clearData() { if(!confirm('Delete ALL data?')) return; localStorage.removeItem('transactions'); localStorage.removeItem('goals'); localStorage.removeItem('budgets'); loadStats(); loadActivity(); alert('Data cleared!'); }
+  function logout() { localStorage.removeItem('token'); localStorage.removeItem('user'); window.location.href='login.html'; }
+  function openSidebar() { document.getElementById('sidebar').classList.add('open'); document.getElementById('sidebarOverlay').classList.add('show'); }
+  function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('sidebarOverlay').classList.remove('show'); }
+</script>
+</body>
+</html>

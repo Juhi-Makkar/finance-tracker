@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Settings — FinTrack</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <link rel="stylesheet" href="../css/style.css"/>
+  <link rel="stylesheet" href="../css/themes.css"/>
+  <link rel="stylesheet" href="../css/animations.css"/>
+  <style>
+    :root { --bg:#0F172A; --sidebar-bg:rgba(255,255,255,0.04); --card:rgba(255,255,255,0.06); --border:rgba(255,255,255,0.08); --accent:#6366f1; --green:#22c55e; --red:#ef4444; --yellow:#fbbf24; --text:#f1f5f9; --muted:#94a3b8; --sidebar-width:240px; }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Segoe UI',sans-serif; background:var(--bg); color:var(--text); display:flex; min-height:100vh; }
+    .sidebar { width:var(--sidebar-width); min-height:100vh; background:var(--sidebar-bg); border-right:1px solid var(--border); display:flex; flex-direction:column; position:fixed; top:0; left:0; z-index:50; backdrop-filter:blur(20px); transition:transform 0.3s; }
+    .sidebar-logo { padding:24px 20px; display:flex; align-items:center; gap:10px; border-bottom:1px solid var(--border); }
+    .sidebar-logo i { color:var(--accent); font-size:22px; }
+    .sidebar-logo span { font-size:18px; font-weight:700; background:linear-gradient(90deg,#6366f1,#22d3ee); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .sidebar-nav { flex:1; padding:16px 12px; overflow-y:auto; }
+    .nav-section-label { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; padding:12px 8px 6px; }
+    .nav-item { display:flex; align-items:center; gap:12px; padding:11px 12px; border-radius:10px; margin-bottom:2px; color:var(--muted); text-decoration:none; font-size:14px; transition:all 0.2s; cursor:pointer; }
+    .nav-item:hover { background:rgba(255,255,255,0.06); color:var(--text); }
+    .nav-item.active { background:rgba(99,102,241,0.15); color:var(--accent); }
+    .nav-item i { width:18px; text-align:center; font-size:15px; }
+    .sidebar-bottom { padding:16px 12px; border-top:1px solid var(--border); }
+    .user-card { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:10px; background:rgba(255,255,255,0.04); cursor:pointer; }
+    .avatar { width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg,#6366f1,#22d3ee); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; color:white; flex-shrink:0; }
+    .user-info .name { font-size:13px; font-weight:600; }
+    .user-info .email { font-size:11px; color:var(--muted); }
+    .main { margin-left:var(--sidebar-width); flex:1; display:flex; flex-direction:column; }
+    .topbar { display:flex; align-items:center; padding:16px 28px; border-bottom:1px solid var(--border); background:rgba(15,23,42,0.8); backdrop-filter:blur(20px); position:sticky; top:0; z-index:40; gap:14px; }
+    .topbar h1 { font-size:20px; font-weight:700; }
+    .hamburger { display:none; background:none; border:none; color:var(--text); font-size:20px; cursor:pointer; }
+    .content { padding:28px; flex:1; max-width:760px; }
+    .card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:24px; margin-bottom:20px; }
+    .card-title { font-size:15px; font-weight:700; margin-bottom:20px; display:flex; align-items:center; gap:10px; }
+    .card-title i { color:var(--accent); }
+    .setting-row { display:flex; align-items:center; justify-content:space-between; padding:14px 0; border-bottom:1px solid var(--border); }
+    .setting-row:last-child { border-bottom:none; padding-bottom:0; }
+    .setting-row:first-child { padding-top:0; }
+    .setting-info h4 { font-size:14px; font-weight:600; margin-bottom:3px; }
+    .setting-info p { font-size:12px; color:var(--muted); }
+    .toggle { width:44px; height:24px; border-radius:50px; background:rgba(255,255,255,0.1); border:none; cursor:pointer; position:relative; transition:all 0.3s; flex-shrink:0; }
+    .toggle.on { background:var(--accent); }
+    .toggle::after { content:''; position:absolute; width:18px; height:18px; border-radius:50%; background:white; top:3px; left:3px; transition:all 0.3s; }
+    .toggle.on::after { left:23px; }
+    .setting-select { padding:8px 12px; background:rgba(255,255,255,0.05); border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:13px; outline:none; cursor:pointer; }
+    .setting-select option { background:#1e293b; }
+    .setting-input { padding:8px 12px; background:rgba(255,255,255,0.05); border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:13px; outline:none; width:140px; }
+    .setting-input:focus { border-color:var(--accent); }
+    .btn-save { padding:10px 22px; border-radius:10px; background:var(--accent); color:white; border:none; font-size:14px; font-weight:600; cursor:pointer; transition:all 0.2s; margin-top:16px; }
+    .btn-save:hover { background:#4f46e5; }
+    .sidebar-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:49; }
+    @media(max-width:768px) { .sidebar { transform:translateX(-100%); } .sidebar.open { transform:translateX(0); } .sidebar-overlay.show { display:block; } .main { margin-left:0; } .hamburger { display:block; } .content { padding:16px; } .topbar { padding:12px 16px; } }
+  </style>
+</head>
+<body>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo"><i class="fas fa-chart-line"></i><span>FinTrack</span></div>
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Main</div>
+    <a class="nav-item" href="dashboard.html"><i class="fas fa-house"></i> Dashboard</a>
+    <a class="nav-item" href="transactions.html"><i class="fas fa-arrow-right-arrow-left"></i> Transactions</a>
+    <a class="nav-item" href="income.html"><i class="fas fa-arrow-trend-up"></i> Income</a>
+    <a class="nav-item" href="expenses.html"><i class="fas fa-arrow-trend-down"></i> Expenses</a>
+    <div class="nav-section-label">Planning</div>
+    <a class="nav-item" href="budget.html"><i class="fas fa-wallet"></i> Budget Planner</a>
+    <a class="nav-item" href="goals.html"><i class="fas fa-bullseye"></i> Savings Goals</a>
+    <a class="nav-item" href="recurring.html"><i class="fas fa-rotate"></i> Recurring</a>
+    <a class="nav-item" href="calendar.html"><i class="fas fa-calendar-days"></i> Calendar</a>
+    <div class="nav-section-label">Analytics</div>
+    <a class="nav-item" href="reports.html"><i class="fas fa-chart-pie"></i> Reports</a>
+    <div class="nav-section-label">Account</div>
+    <a class="nav-item" href="profile.html"><i class="fas fa-user"></i> Profile</a>
+    <a class="nav-item active" href="settings.html"><i class="fas fa-gear"></i> Settings</a>
+    <a class="nav-item" href="appearance.html"><i class="fas fa-palette"></i> Themes</a>
+    <a class="nav-item" onclick="logout()"><i class="fas fa-right-from-bracket"></i> Logout</a>
+  </nav>
+  <div class="sidebar-bottom">
+    <div class="user-card">
+      <div class="avatar" id="sidebarAvatar">J</div>
+      <div class="user-info"><div class="name" id="sidebarName">Loading...</div><div class="email" id="sidebarEmail">...</div></div>
+    </div>
+  </div>
+</aside>
+<div class="main">
+  <div class="topbar">
+    <button class="hamburger" onclick="openSidebar()"><i class="fas fa-bars"></i></button>
+    <h1>Settings</h1>
+  </div>
+  <div class="content">
+
+    <div class="card">
+      <div class="card-title"><i class="fas fa-bell"></i> Notifications</div>
+      <div class="setting-row">
+        <div class="setting-info"><h4>Daily Reminder</h4><p>Get reminded to log today's transactions</p></div>
+        <button class="toggle on" id="toggleReminder" onclick="toggleSetting(this,'reminder')"></button>
+      </div>
+      <div class="setting-row">
+        <div class="setting-info"><h4>Reminder Time</h4><p>What time to send the reminder</p></div>
+        <input type="time" class="setting-input" id="reminderTime" value="20:00"/>
+      </div>
+      <div class="setting-row">
+        <div class="setting-info"><h4>Budget Alerts</h4><p>Alert when you exceed a budget limit</p></div>
+        <button class="toggle on" id="toggleBudgetAlert" onclick="toggleSetting(this,'budgetAlert')"></button>
+      </div>
+      <div class="setting-row">
+        <div class="setting-info"><h4>Goal Milestones</h4><p>Celebrate when you hit savings milestones</p></div>
+        <button class="toggle on" id="toggleGoalAlert" onclick="toggleSetting(this,'goalAlert')"></button>
+      </div>
+      <button class="btn-save" onclick="saveSettings()">Save Notification Settings</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><i class="fas fa-coins"></i> Currency & Format</div>
+      <div class="setting-row">
+        <div class="setting-info"><h4>Currency</h4><p>Your preferred currency symbol</p></div>
+        <select class="setting-select" id="setCurrency">
+          <option value="INR">₹ INR</option>
+          <option value="USD">$ USD</option>
+          <option value="EUR">€ EUR</option>
+          <option value="GBP">£ GBP</option>
+        </select>
+      </div>
+      <div class="setting-row">
+        <div class="setting-info"><h4>Date Format</h4><p>How dates are displayed</p></div>
+        <select class="setting-select" id="setDateFormat">
+          <option>DD/MM/YYYY</option>
+          <option>MM/DD/YYYY</option>
+          <option>YYYY-MM-DD</option>
+        </select>
+      </div>
+      <button class="btn-save" onclick="saveSettings()">Save Currency Settings</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><i class="fas fa-shield-halved"></i> Privacy & Security</div>
+      <div class="setting-row">
+        <div class="setting-info"><h4>Auto Logout</h4><p>Logout after 30 minutes of inactivity</p></div>
+        <button class="toggle" id="toggleAutoLogout" onclick="toggleSetting(this,'autoLogout')"></button>
+      </div>
+      <div class="setting-row">
+        <div class="setting-info"><h4>Data Backup</h4><p>Auto backup your data weekly</p></div>
+        <button class="toggle on" id="toggleBackup" onclick="toggleSetting(this,'backup')"></button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><i class="fas fa-database"></i> Data Management</div>
+      <div class="setting-row">
+        <div class="setting-info"><h4>Export All Data</h4><p>Download all your transactions as CSV</p></div>
+        <button class="btn-save" style="margin:0" onclick="exportData()"><i class="fas fa-download"></i> Export</button>
+      </div>
+      <div class="setting-row">
+        <div class="setting-info"><h4>Clear All Data</h4><p>Permanently delete all transactions</p></div>
+        <button style="padding:8px 16px;border-radius:8px;background:rgba(239,68,68,0.1);color:#ef4444;border:1px solid rgba(239,68,68,0.3);cursor:pointer;font-size:13px" onclick="clearData()">Clear Data</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+<script src="../js/theme.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => { checkAuth(); loadSettings(); });
+  function checkAuth() {
+    const user = JSON.parse(localStorage.getItem('user')||'null');
+    if (!user) { window.location.href='login.html'; return; }
+    document.getElementById('sidebarAvatar').textContent=((user.firstName?.[0]||'')+(user.lastName?.[0]||'')).toUpperCase()||'U';
+    document.getElementById('sidebarName').textContent=`${user.firstName} ${user.lastName}`;
+    document.getElementById('sidebarEmail').textContent=user.email;
+  }
+  function loadSettings() {
+    const s = JSON.parse(localStorage.getItem('settings')||'{}');
+    if (s.currency) document.getElementById('setCurrency').value = s.currency;
+    if (s.reminderTime) document.getElementById('reminderTime').value = s.reminderTime;
+  }
+  function toggleSetting(btn, key) { btn.classList.toggle('on'); }
+  function saveSettings() {
+    const settings = { currency: document.getElementById('setCurrency').value, reminderTime: document.getElementById('reminderTime').value };
+    localStorage.setItem('settings', JSON.stringify(settings));
+    alert('Settings saved!');
+  }
+  function exportData() {
+    const txs = JSON.parse(localStorage.getItem('transactions')||'[]');
+    const rows = [['Date','Type','Category','Description','Amount']];
+    txs.forEach(t=>rows.push([t.date,t.type,t.category,t.description||'',t.amount]));
+    const csv = rows.map(r=>r.join(',')).join('\n');
+    const a = document.createElement('a'); a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv); a.download='fintrack-data.csv'; a.click();
+  }
+  function clearData() {
+    if (!confirm('Delete ALL data? This cannot be undone.')) return;
+    localStorage.removeItem('transactions'); localStorage.removeItem('goals'); localStorage.removeItem('budgets');
+    alert('Data cleared!');
+  }
+  function logout() { localStorage.removeItem('token'); localStorage.removeItem('user'); window.location.href='login.html'; }
+  function openSidebar() { document.getElementById('sidebar').classList.add('open'); document.getElementById('sidebarOverlay').classList.add('show'); }
+  function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('sidebarOverlay').classList.remove('show'); }
+</script>
+</body>
+</html>

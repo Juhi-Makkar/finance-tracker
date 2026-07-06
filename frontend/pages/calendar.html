@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Calendar — FinTrack</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <link rel="stylesheet" href="../css/style.css"/>
+  <link rel="stylesheet" href="../css/themes.css"/>
+  <link rel="stylesheet" href="../css/animations.css"/>
+  <style>
+    :root {
+      --bg:#0F172A; --sidebar-bg:rgba(255,255,255,0.04); --card:rgba(255,255,255,0.06);
+      --border:rgba(255,255,255,0.08); --accent:#6366f1; --green:#22c55e;
+      --red:#ef4444; --yellow:#fbbf24; --text:#f1f5f9; --muted:#94a3b8; --sidebar-width:240px;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Segoe UI',sans-serif; background:var(--bg); color:var(--text); display:flex; min-height:100vh; }
+    .sidebar { width:var(--sidebar-width); min-height:100vh; background:var(--sidebar-bg); border-right:1px solid var(--border); display:flex; flex-direction:column; position:fixed; top:0; left:0; z-index:50; backdrop-filter:blur(20px); transition:transform 0.3s; }
+    .sidebar-logo { padding:24px 20px; display:flex; align-items:center; gap:10px; border-bottom:1px solid var(--border); }
+    .sidebar-logo i { color:var(--accent); font-size:22px; }
+    .sidebar-logo span { font-size:18px; font-weight:700; background:linear-gradient(90deg,#6366f1,#22d3ee); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .sidebar-nav { flex:1; padding:16px 12px; overflow-y:auto; }
+    .nav-section-label { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; padding:12px 8px 6px; }
+    .nav-item { display:flex; align-items:center; gap:12px; padding:11px 12px; border-radius:10px; margin-bottom:2px; color:var(--muted); text-decoration:none; font-size:14px; transition:all 0.2s; cursor:pointer; }
+    .nav-item:hover { background:rgba(255,255,255,0.06); color:var(--text); }
+    .nav-item.active { background:rgba(99,102,241,0.15); color:var(--accent); }
+    .nav-item i { width:18px; text-align:center; font-size:15px; }
+    .sidebar-bottom { padding:16px 12px; border-top:1px solid var(--border); }
+    .user-card { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:10px; background:rgba(255,255,255,0.04); cursor:pointer; }
+    .avatar { width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg,#6366f1,#22d3ee); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; color:white; flex-shrink:0; }
+    .user-info .name { font-size:13px; font-weight:600; }
+    .user-info .email { font-size:11px; color:var(--muted); }
+    .main { margin-left:var(--sidebar-width); flex:1; display:flex; flex-direction:column; }
+    .topbar { display:flex; align-items:center; justify-content:space-between; padding:16px 28px; border-bottom:1px solid var(--border); background:rgba(15,23,42,0.8); backdrop-filter:blur(20px); position:sticky; top:0; z-index:40; }
+    .topbar-left h1 { font-size:20px; font-weight:700; }
+    .topbar-left p { font-size:13px; color:var(--muted); margin-top:2px; }
+    .hamburger { display:none; background:none; border:none; color:var(--text); font-size:20px; cursor:pointer; }
+    .content { padding:28px; flex:1; display:flex; flex-direction:column; gap:24px; }
+
+    /* MAIN LAYOUT */
+    .cal-layout { display:grid; grid-template-columns:1fr 320px; gap:24px; }
+
+    /* CALENDAR CARD */
+    .cal-card { background:var(--card); border:1px solid var(--border); border-radius:20px; padding:24px; }
+    .cal-nav { display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; }
+    .cal-month { font-size:20px; font-weight:700; }
+    .cal-nav-btns { display:flex; gap:8px; }
+    .nav-btn { width:36px; height:36px; border-radius:9px; border:1px solid var(--border); background:transparent; color:var(--muted); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:14px; transition:all 0.2s; }
+    .nav-btn:hover { border-color:var(--accent); color:var(--accent); }
+    .cal-weekdays { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; margin-bottom:8px; }
+    .weekday { text-align:center; font-size:12px; color:var(--muted); font-weight:600; padding:8px; text-transform:uppercase; letter-spacing:0.5px; }
+    .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
+    .cal-day { min-height:80px; border-radius:12px; padding:8px; cursor:pointer; transition:all 0.2s; border:1px solid transparent; position:relative; }
+    .cal-day:hover { background:rgba(255,255,255,0.06); border-color:var(--border); }
+    .cal-day.other-month { opacity:0.3; }
+    .cal-day.today { border-color:var(--accent) !important; background:rgba(99,102,241,0.08); }
+    .cal-day.selected { background:rgba(99,102,241,0.15); border-color:var(--accent); }
+    .cal-day.has-income { border-top:2px solid var(--green); }
+    .cal-day.has-expense { border-bottom:2px solid var(--red); }
+    .day-num { font-size:13px; font-weight:600; margin-bottom:4px; }
+    .cal-day.today .day-num { color:var(--accent); }
+    .day-dots { display:flex; flex-direction:column; gap:2px; }
+    .day-dot { font-size:10px; padding:1px 5px; border-radius:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .dot-income { background:rgba(34,197,94,0.2); color:#22c55e; }
+    .dot-expense { background:rgba(239,68,68,0.2); color:#ef4444; }
+    .day-total { position:absolute; bottom:4px; right:6px; font-size:10px; font-weight:700; }
+
+    /* LEGEND */
+    .legend { display:flex; gap:16px; margin-top:16px; }
+    .legend-item { display:flex; align-items:center; gap:6px; font-size:12px; color:var(--muted); }
+    .legend-dot { width:10px; height:10px; border-radius:3px; }
+
+    /* SIDE PANEL */
+    .side-panel { display:flex; flex-direction:column; gap:20px; }
+    .panel-card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:20px; }
+    .panel-title { font-size:15px; font-weight:700; margin-bottom:16px; display:flex; align-items:center; gap:8px; }
+
+    /* SELECTED DAY */
+    .selected-date { font-size:13px; color:var(--muted); margin-bottom:12px; }
+    .day-tx-list { display:flex; flex-direction:column; gap:10px; max-height:280px; overflow-y:auto; }
+    .day-tx { display:flex; align-items:center; gap:10px; padding:10px; background:rgba(255,255,255,0.03); border-radius:10px; border:1px solid var(--border); }
+    .day-tx-icon { width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:13px; flex-shrink:0; }
+    .day-tx-info { flex:1; min-width:0; }
+    .day-tx-name { font-size:13px; font-weight:600; }
+    .day-tx-cat { font-size:11px; color:var(--muted); }
+    .day-tx-amount { font-size:13px; font-weight:700; }
+    .empty-day { text-align:center; padding:24px; color:var(--muted); font-size:13px; }
+    .empty-day i { font-size:28px; opacity:0.3; display:block; margin-bottom:8px; }
+
+    /* MONTHLY SUMMARY */
+    .month-stats { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .month-stat { background:rgba(255,255,255,0.03); border-radius:10px; padding:12px; text-align:center; }
+    .month-stat-val { font-size:16px; font-weight:700; margin-bottom:4px; }
+    .month-stat-lbl { font-size:11px; color:var(--muted); }
+
+    /* HEATMAP */
+    .heatmap-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:3px; }
+    .heat-cell { height:18px; border-radius:3px; transition:all 0.2s; cursor:pointer; }
+    .heat-cell:hover { opacity:0.8; transform:scale(1.2); }
+
+    .btn-add { border:none; border-radius:10px; padding:10px 18px; color:white; background:var(--accent); cursor:pointer; font-size:14px; display:inline-flex; align-items:center; gap:8px; transition:all 0.2s; }
+    .btn-add:hover { background:#4f46e5; }
+
+    .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.65); display:none; align-items:center; justify-content:center; z-index:100; }
+    .modal-overlay.show { display:flex; }
+    .modal { width:420px; max-width:95vw; background:rgba(15,23,42,0.98); border:1px solid rgba(255,255,255,0.08); border-radius:20px; padding:28px; box-shadow:0 24px 60px rgba(0,0,0,0.35); }
+    .modal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
+    .modal-header h3 { font-size:18px; font-weight:700; }
+    .modal-close { background:none; border:none; color:var(--muted); font-size:20px; cursor:pointer; }
+    .modal-body { display:flex; flex-direction:column; gap:14px; }
+    .modal-row { display:grid; gap:12px; }
+    .modal-row-full { width:100%; }
+    .select-type, .modal-row input, .modal-row select, .modal-row textarea { width:100%; padding:11px 14px; border-radius:10px; border:1px solid var(--border); background:rgba(255,255,255,0.05); color:var(--text); outline:none; font-family:inherit; }
+    .modal-row textarea { resize:vertical; min-height:80px; }
+    .btn-submit { width:100%; padding:13px; border-radius:10px; border:none; font-size:15px; font-weight:700; background:var(--green); color:white; cursor:pointer; transition:all 0.2s; margin-top:10px; }
+    .btn-submit:hover { background:#16a34a; }
+
+    .sidebar-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:49; }
+    @media(max-width:1024px) { .cal-layout { grid-template-columns:1fr; } }
+    @media(max-width:768px) {
+      .sidebar { transform:translateX(-100%); } .sidebar.open { transform:translateX(0); }
+      .sidebar-overlay.show { display:block; } .main { margin-left:0; } .hamburger { display:block; }
+      .content { padding:16px; } .topbar { padding:12px 16px; }
+      .cal-day { min-height:50px; padding:4px; }
+      .day-dots { display:none; }
+    }
+  </style>
+</head>
+<body>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo"><i class="fas fa-chart-line"></i><span>FinTrack</span></div>
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Main</div>
+    <a class="nav-item" href="dashboard.html"><i class="fas fa-house"></i> Dashboard</a>
+    <a class="nav-item" href="transactions.html"><i class="fas fa-arrow-right-arrow-left"></i> Transactions</a>
+    <a class="nav-item" href="income.html"><i class="fas fa-arrow-trend-up"></i> Income</a>
+    <a class="nav-item" href="expenses.html"><i class="fas fa-arrow-trend-down"></i> Expenses</a>
+    <div class="nav-section-label">Planning</div>
+    <a class="nav-item" href="budget.html"><i class="fas fa-wallet"></i> Budget Planner</a>
+    <a class="nav-item" href="goals.html"><i class="fas fa-bullseye"></i> Savings Goals</a>
+    <a class="nav-item" href="recurring.html"><i class="fas fa-rotate"></i> Recurring</a>
+    <a class="nav-item active" href="calendar.html"><i class="fas fa-calendar-days"></i> Calendar</a>
+    <div class="nav-section-label">Analytics</div>
+    <a class="nav-item" href="reports.html"><i class="fas fa-chart-pie"></i> Reports</a>
+    <div class="nav-section-label">Account</div>
+    <a class="nav-item" href="profile.html"><i class="fas fa-user"></i> Profile</a>
+    <a class="nav-item" href="settings.html"><i class="fas fa-gear"></i> Settings</a>
+    <a class="nav-item" href="appearance.html"><i class="fas fa-palette"></i> Themes</a>
+    <a class="nav-item" onclick="logout()"><i class="fas fa-right-from-bracket"></i> Logout</a>
+  </nav>
+  <div class="sidebar-bottom">
+    <div class="user-card">
+      <div class="avatar" id="sidebarAvatar">J</div>
+      <div class="user-info">
+        <div class="name" id="sidebarName">Loading...</div>
+        <div class="email" id="sidebarEmail">...</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:14px">
+      <button class="hamburger" onclick="openSidebar()"><i class="fas fa-bars"></i></button>
+      <div class="topbar-left">
+        <h1>Calendar</h1>
+        <p>View your transactions by date</p>
+      </div>
+    </div>
+    <button class="btn-add" onclick="openTransactionModal()"><i class="fas fa-plus"></i> Add Transaction</button>
+  </div>
+
+  <div class="content">
+    <div class="cal-layout">
+      <!-- CALENDAR -->
+      <div class="cal-card">
+        <div class="cal-nav">
+          <div class="cal-month" id="calMonthLabel"></div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <button class="nav-btn" onclick="changeMonth(-1)"><i class="fas fa-chevron-left"></i></button>
+            <button class="nav-btn" onclick="goToday()" style="width:auto;padding:0 12px;font-size:12px">Today</button>
+            <button class="nav-btn" onclick="changeMonth(1)"><i class="fas fa-chevron-right"></i></button>
+          </div>
+        </div>
+        <div class="cal-weekdays">
+          <div class="weekday">Sun</div><div class="weekday">Mon</div><div class="weekday">Tue</div>
+          <div class="weekday">Wed</div><div class="weekday">Thu</div><div class="weekday">Fri</div>
+          <div class="weekday">Sat</div>
+        </div>
+        <div class="cal-grid" id="calGrid"></div>
+        <div class="legend">
+          <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div> Income</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div> Expense</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--accent);border-radius:50%"></div> Today</div>
+        </div>
+      </div>
+
+      <!-- SIDE PANEL -->
+      <div class="side-panel">
+        <!-- SELECTED DAY -->
+        <div class="panel-card">
+          <div class="panel-title"><i class="fas fa-calendar-day" style="color:var(--accent)"></i> <span id="selectedDateLabel">Select a date</span></div>
+          <div class="day-tx-list" id="dayTxList">
+            <div class="empty-day"><i class="fas fa-calendar"></i>Click any date to see transactions</div>
+          </div>
+        </div>
+
+        <!-- MONTHLY SUMMARY -->
+        <div class="panel-card">
+          <div class="panel-title"><i class="fas fa-chart-bar" style="color:var(--green)"></i> Monthly Summary</div>
+          <div class="month-stats">
+            <div class="month-stat">
+              <div class="month-stat-val" style="color:var(--green)" id="mIncome">₹0</div>
+              <div class="month-stat-lbl">Income</div>
+            </div>
+            <div class="month-stat">
+              <div class="month-stat-val" style="color:var(--red)" id="mExpense">₹0</div>
+              <div class="month-stat-lbl">Expenses</div>
+            </div>
+            <div class="month-stat">
+              <div class="month-stat-val" style="color:var(--accent)" id="mBalance">₹0</div>
+              <div class="month-stat-lbl">Balance</div>
+            </div>
+            <div class="month-stat">
+              <div class="month-stat-val" style="color:var(--yellow)" id="mTxCount">0</div>
+              <div class="month-stat-lbl">Transactions</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- EXPENSE HEATMAP -->
+        <div class="panel-card">
+          <div class="panel-title"><i class="fas fa-fire" style="color:var(--yellow)"></i> Spending Heatmap</div>
+          <p style="font-size:12px;color:var(--muted);margin-bottom:12px">Daily spending intensity this month</p>
+          <div class="heatmap-grid" id="heatmapGrid"></div>
+          <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:11px;color:var(--muted)">
+            <span>Low</span><span>High</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="transactionModalOverlay" onclick="closeTransactionModal()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <h3><i class="fas fa-plus"></i> Add Transaction</h3>
+      <button class="modal-close" onclick="closeTransactionModal()"><i class="fas fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-row modal-row-full">
+        <label>Type</label>
+        <select id="txType" class="select-type" onchange="updateTransactionCategories()">
+          <option value="income">Income</option>
+          <option value="expense">Expense</option>
+        </select>
+      </div>
+      <div class="modal-row">
+        <label>Amount</label>
+        <input type="number" id="txAmount" placeholder="0.00" min="0" />
+      </div>
+      <div class="modal-row">
+        <label>Date</label>
+        <input type="date" id="txDate" />
+      </div>
+      <div class="modal-row modal-row-full">
+        <label>Category</label>
+        <select id="txCategory"></select>
+      </div>
+      <div class="modal-row modal-row-full">
+        <label>Description</label>
+        <textarea id="txDescription" placeholder="Optional note..."></textarea>
+      </div>
+      <button class="btn-submit" onclick="addCalendarTransaction()">Save Transaction</button>
+    </div>
+  </div>
+</div>
+
+<script src="../js/theme.js"></script>
+<script src="../js/api.js"></script>
+
+<script>
+  let transactions = [];
+  let currentDate = new Date();
+  let selectedDate = null;
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    checkAuth();
+    await loadTransactions();
+    renderCalendar();
+    renderMonthlySummary();
+    renderHeatmap();
+  });
+
+  function checkAuth() {
+    const user = JSON.parse(localStorage.getItem('user') || 'null');
+    const token = localStorage.getItem('token');
+
+    if (!user || !token) {
+      window.location.href = 'login.html';
+      return;
+    }
+
+    document.getElementById('sidebarAvatar').textContent =
+      ((user.firstName?.[0] || '') + (user.lastName?.[0] || '')).toUpperCase() || 'U';
+    document.getElementById('sidebarName').textContent =
+      `${user.firstName || ''} ${user.lastName || ''}`.trim();
+    document.getElementById('sidebarEmail').textContent = user.email || '';
+  }
+
+  async function loadTransactions() {
+    try {
+      transactions = await Transactions.getAll({ limit: 10000 });
+    } catch (err) {
+      console.error(err);
+      alert('Could not load calendar transactions. Make sure backend and MongoDB are running.');
+      transactions = [];
+    }
+  }
+
+  const incomeCategories = ['Salary','Freelancing','Business','Pocket Money','Interest','Gifts','Refunds','Investments','YouTube Earnings','Rental Income','Others'];
+  const expenseCategories = ['Food','Shopping','Bills','Transport','Health','Entertainment','Rent','Utilities','Travel','Education','Others'];
+
+  function updateTransactionCategories() {
+    const type = document.getElementById('txType').value;
+    const categories = type === 'income' ? incomeCategories : expenseCategories;
+    document.getElementById('txCategory').innerHTML = categories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
+  }
+
+  function openTransactionModal(date = selectedDate || new Date()) {
+    document.getElementById('transactionModalOverlay').classList.add('show');
+    const txDate = new Date(date).toISOString().split('T')[0];
+    document.getElementById('txDate').value = txDate;
+    document.getElementById('txAmount').value = '';
+    document.getElementById('txDescription').value = '';
+    document.getElementById('txType').value = 'income';
+    updateTransactionCategories();
+  }
+
+  function closeTransactionModal() {
+    document.getElementById('transactionModalOverlay').classList.remove('show');
+  }
+
+  async function addCalendarTransaction() {
+    const type = document.getElementById('txType').value;
+    const amount = Number(document.getElementById('txAmount').value);
+    const date = document.getElementById('txDate').value;
+    const category = document.getElementById('txCategory').value;
+    const description = document.getElementById('txDescription').value.trim();
+
+    if (!type || !amount || !date || !category) {
+      alert('Please complete all required fields.');
+      return;
+    }
+
+    try {
+      await Transactions.add({ type, amount, date, category, description });
+      closeTransactionModal();
+      await loadTransactions();
+      renderCalendar();
+      renderMonthlySummary();
+      renderHeatmap();
+      const selected = selectedDate ? new Date(selectedDate) : new Date(date);
+      selectedDate = new Date(date);
+      selectDay(selectedDate);
+    } catch (err) {
+      console.error(err);
+      alert(err.message || 'Could not save transaction.');
+    }
+  }
+
+  function logout() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    window.location.href = 'login.html';
+  }
+
+  function formatCurrency(n) {
+    return '₹' + Number(n || 0).toLocaleString('en-IN', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    });
+  }
+
+  function dateKey(date) {
+    const d = new Date(date);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  function getTxForDate(date) {
+    const key = dateKey(date);
+    return transactions.filter(t => dateKey(t.date) === key);
+  }
+
+  function getTxForMonth(year, month) {
+    return transactions.filter(t => {
+      const d = new Date(t.date);
+      return d.getFullYear() === year && d.getMonth() === month;
+    });
+  }
+
+  function renderCalendar() {
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+    const today = new Date();
+
+    const months = [
+      'January','February','March','April','May','June',
+      'July','August','September','October','November','December'
+    ];
+
+    document.getElementById('calMonthLabel').textContent = `${months[month]} ${year}`;
+
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const daysInPrev = new Date(year, month, 0).getDate();
+    const grid = document.getElementById('calGrid');
+
+    grid.innerHTML = '';
+
+    for (let i = firstDay - 1; i >= 0; i--) {
+      const d = new Date(year, month - 1, daysInPrev - i);
+      grid.appendChild(createDayCell(d, true));
+    }
+
+    for (let i = 1; i <= daysInMonth; i++) {
+      const d = new Date(year, month, i);
+      const isToday = d.toDateString() === today.toDateString();
+      const isSelected = selectedDate && d.toDateString() === selectedDate.toDateString();
+      grid.appendChild(createDayCell(d, false, isToday, isSelected));
+    }
+
+    const remaining = 42 - (firstDay + daysInMonth);
+    for (let i = 1; i <= remaining; i++) {
+      const d = new Date(year, month + 1, i);
+      grid.appendChild(createDayCell(d, true));
+    }
+  }
+
+  function createDayCell(date, otherMonth, isToday = false, isSelected = false) {
+    const txs = getTxForDate(date);
+    const income = txs.filter(t => t.type === 'income');
+    const expense = txs.filter(t => t.type === 'expense');
+
+    const totalIncome = income.reduce((s, t) => s + Number(t.amount || 0), 0);
+    const totalExpense = expense.reduce((s, t) => s + Number(t.amount || 0), 0);
+
+    const cell = document.createElement('div');
+    cell.className =
+      `cal-day${otherMonth ? ' other-month' : ''}${isToday ? ' today' : ''}${isSelected ? ' selected' : ''}${income.length ? ' has-income' : ''}${expense.length ? ' has-expense' : ''}`;
+
+    cell.innerHTML = `
+      <div class="day-num">${date.getDate()}</div>
+      <div class="day-dots">
+        ${income.length ? `<div class="day-dot dot-income">+${formatCurrency(totalIncome)}</div>` : ''}
+        ${expense.length ? `<div class="day-dot dot-expense">-${formatCurrency(totalExpense)}</div>` : ''}
+      </div>
+    `;
+
+    cell.onclick = () => selectDay(date);
+    return cell;
+  }
+
+  function selectDay(date) {
+    selectedDate = date;
+    renderCalendar();
+
+    const txs = getTxForDate(date);
+    const label = date.toLocaleDateString('en-IN', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+
+    document.getElementById('selectedDateLabel').textContent = label;
+
+    const list = document.getElementById('dayTxList');
+
+    if (!txs.length) {
+      list.innerHTML = `<div class="empty-day"><i class="fas fa-receipt"></i>No transactions on this day</div>`;
+      return;
+    }
+
+    list.innerHTML = txs.map(t => `
+      <div class="day-tx">
+        <div class="day-tx-icon" style="background:${t.type === 'income' ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)'};color:${t.type === 'income' ? '#22c55e' : '#ef4444'}">
+          <i class="fas ${t.type === 'income' ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down'}"></i>
+        </div>
+        <div class="day-tx-info">
+          <div class="day-tx-name">${t.category}</div>
+          <div class="day-tx-cat">${t.description || t.type}</div>
+        </div>
+        <div class="day-tx-amount" style="color:${t.type === 'income' ? '#22c55e' : '#ef4444'}">
+          ${t.type === 'income' ? '+' : '-'}${formatCurrency(t.amount)}
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function renderMonthlySummary() {
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+    const txs = getTxForMonth(year, month);
+
+    const income = txs
+      .filter(t => t.type === 'income')
+      .reduce((s, t) => s + Number(t.amount || 0), 0);
+
+    const expense = txs
+      .filter(t => t.type === 'expense')
+      .reduce((s, t) => s + Number(t.amount || 0), 0);
+
+    document.getElementById('mIncome').textContent = formatCurrency(income);
+    document.getElementById('mExpense').textContent = formatCurrency(expense);
+    document.getElementById('mBalance').textContent = formatCurrency(income - expense);
+    document.getElementById('mTxCount').textContent = txs.length;
+  }
+
+  function renderHeatmap() {
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+    const dailyExp = Array.from({ length: daysInMonth }, (_, i) => {
+      const d = new Date(year, month, i + 1);
+      return getTxForDate(d)
+        .filter(t => t.type === 'expense')
+        .reduce((s, t) => s + Number(t.amount || 0), 0);
+    });
+
+    const max = Math.max(...dailyExp, 1);
+    const grid = document.getElementById('heatmapGrid');
+
+    grid.innerHTML = dailyExp.map((v, i) => {
+      const intensity = v / max;
+      const alpha = intensity > 0 ? 0.2 + intensity * 0.8 : 0.05;
+      return `<div class="heat-cell" style="background:rgba(239,68,68,${alpha.toFixed(2)})" title="Day ${i + 1}: ${formatCurrency(v)}"></div>`;
+    }).join('');
+  }
+
+  function changeMonth(dir) {
+    currentDate.setMonth(currentDate.getMonth() + dir);
+    selectedDate = null;
+
+    document.getElementById('selectedDateLabel').textContent = 'Select a date';
+    document.getElementById('dayTxList').innerHTML =
+      `<div class="empty-day"><i class="fas fa-calendar"></i>Click any date to see transactions</div>`;
+
+    renderCalendar();
+    renderMonthlySummary();
+    renderHeatmap();
+  }
+
+  function goToday() {
+    currentDate = new Date();
+    selectedDate = new Date();
+
+    renderCalendar();
+    renderMonthlySummary();
+    renderHeatmap();
+    selectDay(new Date());
+  }
+
+  function openSidebar() {
+    document.getElementById('sidebar').classList.add('open');
+    document.getElementById('sidebarOverlay').classList.add('show');
+  }
+
+  function closeSidebar() {
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('sidebarOverlay').classList.remove('show');
+  }
+</script>
+</body>
+</html>
+
+<!-- done -->

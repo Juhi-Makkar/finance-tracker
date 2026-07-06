@@ -1,0 +1,158 @@
+/* ============================================
+   FINTRACK — ANIMATIONS & TRANSITIONS
+   ============================================ */
+
+/* Page fade in */
+body {
+  animation: pageFadeIn 0.4s ease;
+}
+@keyframes pageFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Card hover lift */
+.stat-card, .sum-card, .goal-card, .feat-card,
+.budget-item, .theme-card, .cat-card, .rec-card {
+  transition: transform 0.25s ease, box-shadow 0.25s ease,
+              border-color 0.25s ease, background 0.25s ease !important;
+}
+.stat-card:hover, .goal-card:hover, .feat-card:hover,
+.cat-card:hover, .rec-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.25) !important;
+}
+
+/* Button press effect */
+button, .btn-primary, .btn-add, .btn-save,
+.btn-submit, .btn-login, .btn-signup {
+  transition: transform 0.15s ease, box-shadow 0.15s ease,
+              background 0.2s ease, opacity 0.2s ease !important;
+}
+button:active { transform: scale(0.97) !important; }
+
+/* Nav item slide */
+.nav-item {
+  transition: background 0.2s ease, color 0.2s ease,
+              padding-left 0.2s ease !important;
+}
+.nav-item:hover { padding-left: 16px !important; }
+.nav-item.active { padding-left: 16px !important; }
+
+/* Progress bar fill animation */
+.prog-fill, .progress-fill, .top-bar {
+  animation: fillBar 1s ease forwards;
+  animation-delay: 0.2s;
+}
+@keyframes fillBar {
+  from { width: 0 !important; }
+}
+
+/* Modal open animation */
+.modal-overlay.show .modal {
+  animation: modalSlideUp 0.3s ease;
+}
+@keyframes modalSlideUp {
+  from { opacity: 0; transform: translateY(30px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Stat counter */
+.stat-val, .sum-val, .stat-value {
+  transition: color 0.3s ease !important;
+}
+
+/* Sidebar logo pulse on hover */
+.sidebar-logo:hover i {
+  animation: pulse 0.6s ease;
+}
+@keyframes pulse {
+  0%  { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100%{ transform: scale(1); }
+}
+
+/* Table row hover */
+tbody tr {
+  transition: background 0.15s ease !important;
+}
+
+/* Input focus glow */
+input:focus, select:focus, textarea:focus {
+  box-shadow: 0 0 0 3px rgba(99,102,241,0.15) !important;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease !important;
+}
+
+/* Badge pop */
+.badge, .b-status, .rec-badge, .status-ok,
+.status-warn, .status-over {
+  transition: transform 0.2s ease !important;
+}
+.badge:hover { transform: scale(1.05); }
+
+/* Calendar day hover */
+.cal-day {
+  transition: background 0.15s ease, border-color 0.15s ease,
+              transform 0.15s ease !important;
+}
+.cal-day:hover { transform: scale(1.02); }
+
+/* Heatmap cell hover */
+.heat-cell {
+  transition: opacity 0.2s ease, transform 0.2s ease !important;
+}
+
+/* Goal card shine effect */
+.goal-card::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -60%;
+  width: 30%;
+  height: 200%;
+  background: rgba(255,255,255,0.03);
+  transform: rotate(30deg);
+  pointer-events: none;
+  transition: left 0.5s ease;
+}
+.goal-card:hover::after { left: 130%; }
+
+/* Spinner */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+.spinner {
+  animation: spin 0.6s linear infinite !important;
+}
+
+/* Skeleton loading */
+.skeleton {
+  background: linear-gradient(90deg,
+    rgba(255,255,255,0.05) 25%,
+    rgba(255,255,255,0.1) 50%,
+    rgba(255,255,255,0.05) 75%);
+  background-size: 200% 100%;
+  animation: skeleton 1.5s infinite;
+  border-radius: 8px;
+}
+@keyframes skeleton {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Notification bell shake */
+.icon-btn:hover i.fa-bell {
+  animation: bellShake 0.4s ease;
+}
+@keyframes bellShake {
+  0%,100% { transform: rotate(0); }
+  25%     { transform: rotate(-15deg); }
+  75%     { transform: rotate(15deg); }
+}
+
+/* Smooth scrollbar */
+* { scrollbar-width: thin; scrollbar-color: rgba(99,102,241,0.3) transparent; }
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.3); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(99,102,241,0.5); }

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login — FinTrack</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <style>
+    :root { --bg:#0F172A; --card:rgba(255,255,255,0.06); --border:rgba(255,255,255,0.1); --accent:#6366f1; --accent2:#22d3ee; --green:#22c55e; --red:#ef4444; --text:#f1f5f9; --muted:#94a3b8; --input-bg:rgba(255,255,255,0.05); }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Segoe UI',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden; padding:20px; }
+    body::before { content:''; position:absolute; top:-200px; left:-200px; width:600px; height:600px; background:radial-gradient(circle,rgba(99,102,241,0.12) 0%,transparent 70%); pointer-events:none; }
+    body::after { content:''; position:absolute; bottom:-200px; right:-200px; width:600px; height:600px; background:radial-gradient(circle,rgba(34,211,238,0.08) 0%,transparent 70%); pointer-events:none; }
+    .login-wrapper { display:flex; width:900px; min-height:560px; border-radius:24px; overflow:hidden; border:1px solid var(--border); background:rgba(15,23,42,0.8); backdrop-filter:blur(20px); position:relative; z-index:1; box-shadow:0 40px 80px rgba(0,0,0,0.4); }
+    .left-panel { flex:1; background:linear-gradient(135deg,rgba(99,102,241,0.2),rgba(34,211,238,0.1)); border-right:1px solid var(--border); padding:50px 40px; display:flex; flex-direction:column; justify-content:space-between; }
+    .logo { display:flex; align-items:center; gap:10px; }
+    .logo i { color:var(--accent); font-size:24px; }
+    .logo span { font-size:20px; font-weight:700; background:linear-gradient(90deg,#6366f1,#22d3ee); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .left-panel h2 { font-size:28px; font-weight:700; line-height:1.3; margin:40px 0 16px; }
+    .left-panel p { color:var(--muted); font-size:15px; line-height:1.7; }
+    .features-list { margin-top:40px; display:flex; flex-direction:column; gap:16px; }
+    .feat-item { display:flex; align-items:center; gap:12px; font-size:14px; color:var(--muted); }
+    .feat-item i { color:var(--accent); font-size:16px; width:20px; }
+    .left-bottom { font-size:13px; color:var(--muted); }
+    .right-panel { flex:1; padding:50px 44px; display:flex; flex-direction:column; justify-content:center; }
+    .right-panel h3 { font-size:26px; font-weight:700; margin-bottom:8px; }
+    .right-panel .subtitle { color:var(--muted); font-size:15px; margin-bottom:36px; }
+    .form-group { margin-bottom:20px; }
+    .form-group label { display:block; font-size:13px; color:var(--muted); margin-bottom:8px; font-weight:500; }
+    .input-wrapper { position:relative; display:flex; align-items:center; }
+    .input-wrapper i.icon { position:absolute; left:14px; color:var(--muted); font-size:15px; }
+    .input-wrapper input { width:100%; padding:13px 14px 13px 42px; background:var(--input-bg); border:1px solid var(--border); border-radius:10px; color:var(--text); font-size:15px; outline:none; transition:all 0.3s; }
+    .input-wrapper input:focus { border-color:var(--accent); background:rgba(99,102,241,0.08); box-shadow:0 0 0 3px rgba(99,102,241,0.15); }
+    .input-wrapper input::placeholder { color:var(--muted); }
+    .toggle-pass { position:absolute; right:14px; color:var(--muted); cursor:pointer; font-size:15px; transition:color 0.3s; }
+    .toggle-pass:hover { color:var(--text); }
+    .form-options { display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; font-size:13px; }
+    .remember { display:flex; align-items:center; gap:8px; color:var(--muted); cursor:pointer; }
+    .remember input[type="checkbox"] { accent-color:var(--accent); width:15px; height:15px; }
+    .forgot-link { color:var(--accent); text-decoration:none; transition:opacity 0.3s; }
+    .forgot-link:hover { opacity:0.8; }
+    .btn-login { width:100%; padding:14px; background:var(--accent); color:white; border:none; border-radius:10px; font-size:16px; font-weight:600; cursor:pointer; transition:all 0.3s; display:flex; align-items:center; justify-content:center; gap:8px; }
+    .btn-login:hover { background:#4f46e5; transform:translateY(-1px); box-shadow:0 8px 25px rgba(99,102,241,0.4); }
+    .btn-login:disabled { opacity:0.7; cursor:not-allowed; transform:none; }
+    .divider { display:flex; align-items:center; gap:12px; margin:24px 0; color:var(--muted); font-size:13px; }
+    .divider::before,.divider::after { content:''; flex:1; height:1px; background:var(--border); }
+    .btn-google { width:100%; padding:13px; background:transparent; color:var(--text); border:1px solid var(--border); border-radius:10px; font-size:15px; cursor:pointer; transition:all 0.3s; display:flex; align-items:center; justify-content:center; gap:10px; }
+    .btn-google:hover { border-color:var(--muted); background:rgba(255,255,255,0.04); }
+    .signup-link { text-align:center; margin-top:24px; font-size:14px; color:var(--muted); }
+    .signup-link a { color:var(--accent); text-decoration:none; font-weight:600; }
+    .signup-link a:hover { text-decoration:underline; }
+    .error-msg { background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); color:#fca5a5; border-radius:8px; padding:10px 14px; font-size:13px; margin-bottom:16px; display:none; align-items:center; gap:8px; }
+    .error-msg.show { display:flex; }
+    .success-msg { background:rgba(34,197,94,0.1); border:1px solid rgba(34,197,94,0.3); color:#86efac; border-radius:8px; padding:10px 14px; font-size:13px; margin-bottom:16px; display:none; align-items:center; gap:8px; }
+    .success-msg.show { display:flex; }
+    .spinner { width:18px; height:18px; border:2px solid rgba(255,255,255,0.3); border-top-color:white; border-radius:50%; animation:spin 0.6s linear infinite; display:none; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    @media(max-width:768px) { .login-wrapper { flex-direction:column; width:95%; min-height:auto; } .left-panel { padding:30px; } .left-panel h2 { font-size:22px; margin:20px 0 10px; } .features-list { display:none; } .right-panel { padding:30px; } }
+  </style>
+</head>
+<body>
+  <div class="login-wrapper">
+    <div class="left-panel">
+      <div class="logo"><i class="fas fa-chart-line"></i><span>FinTrack</span></div>
+      <div>
+        <h2>Welcome back to your financial dashboard</h2>
+        <p>Track every rupee, grow every saving.</p>
+        <div class="features-list">
+          <div class="feat-item"><i class="fas fa-check-circle"></i> Income & Expense Tracking</div>
+          <div class="feat-item"><i class="fas fa-check-circle"></i> Smart Analytics & Reports</div>
+          <div class="feat-item"><i class="fas fa-check-circle"></i> Budget Planner & Goals</div>
+          <div class="feat-item"><i class="fas fa-check-circle"></i> 4 Premium Themes</div>
+          <div class="feat-item"><i class="fas fa-check-circle"></i> Export to PDF & Excel</div>
+        </div>
+      </div>
+      <div class="left-bottom">© 2025 FinTrack. All rights reserved.</div>
+    </div>
+    <div class="right-panel">
+      <h3>Login to your account</h3>
+      <p class="subtitle">Enter your credentials to continue</p>
+      <div class="error-msg" id="errorMsg"><i class="fas fa-circle-exclamation"></i><span id="errorText">Invalid email or password.</span></div>
+      <div class="success-msg" id="successMsg"><i class="fas fa-circle-check"></i><span>Login successful! Redirecting...</span></div>
+      <!-- FIX 3: autocomplete="off" on form, new-password on password field -->
+      <form id="loginForm" onsubmit="handleLogin(event)" autocomplete="off">
+        <div class="form-group">
+          <label>Email Address</label>
+          <div class="input-wrapper">
+            <i class="fas fa-envelope icon"></i>
+            <input type="email" id="email" placeholder="you@example.com" autocomplete="username" required/>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <div class="input-wrapper">
+            <i class="fas fa-lock icon"></i>
+            <!-- FIX 3: autocomplete="new-password" prevents browser autofill -->
+            <input type="password" id="password" placeholder="Enter your password" autocomplete="new-password" required/>
+            <i class="fas fa-eye toggle-pass" id="togglePass" onclick="togglePassword()"></i>
+          </div>
+        </div>
+        <div class="form-options">
+          <label class="remember"><input type="checkbox" id="remember"> Remember me</label>
+          <a href="forgot-password.html" class="forgot-link">Forgot password?</a>
+        </div>
+        <button type="submit" class="btn-login" id="loginBtn">
+          <div class="spinner" id="spinner"></div>
+          <span id="btnText"><i class="fas fa-right-to-bracket"></i> Login</span>
+        </button>
+      </form>
+      <div class="divider">or continue with</div>
+      <button class="btn-google" onclick="alert('Google login coming soon!')">
+        <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20H24v8h11.8C34 33.7 29.5 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 6 1.1 8.1 3l5.7-5.7C34.6 5.1 29.6 3 24 3 12.4 3 3 12.4 3 24s9.4 21 21 21c10.5 0 20-7.5 20-21 0-1.4-.2-2.7-.4-4z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 16 19 13 24 13c3.1 0 6 1.1 8.1 3l5.7-5.7C34.6 5.1 29.6 3 24 3 16.3 3 9.7 7.9 6.3 14.7z"/><path fill="#4CAF50" d="M24 45c5.5 0 10.4-1.9 14.2-5.1l-6.6-5.4C29.7 36.4 27 37 24 37c-5.5 0-10-3.3-11.8-8H5.4C8.8 37.4 15.9 45 24 45z"/><path fill="#1976D2" d="M43.6 20H24v8h11.8c-.8 2.3-2.3 4.2-4.2 5.6l6.6 5.4C41.9 35.6 44 30.2 44 24c0-1.4-.2-2.7-.4-4z"/></svg>
+        Continue with Google
+      </button>
+      <div class="signup-link">Don't have an account? <a href="signup.html">Sign up for free</a></div>
+    </div>
+  </div>
+  <script>
+    // FIX 3: Clear password field on page load to prevent autofill
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        document.getElementById('password').value = '';
+        document.getElementById('email').value = '';
+      }, 100);
+    });
+
+    function togglePassword() {
+      const input = document.getElementById('password');
+      const icon = document.getElementById('togglePass');
+      if (input.type === 'password') { input.type='text'; icon.classList.replace('fa-eye','fa-eye-slash'); }
+      else { input.type='password'; icon.classList.replace('fa-eye-slash','fa-eye'); }
+    }
+
+    function showError(msg) {
+      document.getElementById('errorText').textContent = msg;
+      document.getElementById('errorMsg').classList.add('show');
+      document.getElementById('successMsg').classList.remove('show');
+    }
+
+    function setLoading(loading) {
+      const btn=document.getElementById('loginBtn'), spinner=document.getElementById('spinner'), btnText=document.getElementById('btnText');
+      spinner.style.display = loading?'block':'none';
+      btnText.style.display = loading?'none':'flex';
+      btn.disabled = loading;
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      if (!email || !password) { showError('Please fill in all fields.'); return; }
+      setLoading(true);
+      try {
+        const res = await fetch('http://localhost:5000/api/auth/login', {
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          // FIX 1: Clear ALL old user data before saving new user's data
+          clearPreviousUserData();
+          // Save new user's token and info
+          localStorage.setItem('token', data.token);
+          localStorage.setItem('user', JSON.stringify(data.user));
+          document.getElementById('successMsg').classList.add('show');
+          document.getElementById('errorMsg').classList.remove('show');
+          // FIX 4: Check if admin and redirect accordingly
+          if (data.user.isAdmin) {
+            setTimeout(() => { window.location.href = 'admin.html'; }, 1200);
+          } else {
+            setTimeout(() => { window.location.href = 'dashboard.html'; }, 1200);
+          }
+        } else {
+          showError(data.message || 'Invalid email or password.');
+        }
+      } catch (err) {
+        showError('Cannot connect to server. Make sure backend is running.');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    // FIX 1: Clear localStorage data of previous user on new login
+    function clearPreviousUserData() {
+      const keysToRemove = ['transactions','goals','budgets','recurring','settings'];
+      keysToRemove.forEach(key => localStorage.removeItem(key));
+      // Keep theme preference — it's not user-specific
+    }
+  </script>
+</body>
+</html>

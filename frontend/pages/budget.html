@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Budget Planner — FinTrack</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <link rel="stylesheet" href="../css/style.css"/>
+  <link rel="stylesheet" href="../css/themes.css"/>
+  <link rel="stylesheet" href="../css/animations.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg:#0F172A; --sidebar-bg:rgba(255,255,255,0.04); --card:rgba(255,255,255,0.06);
+      --border:rgba(255,255,255,0.08); --accent:#6366f1; --green:#22c55e;
+      --red:#ef4444; --yellow:#fbbf24; --text:#f1f5f9; --muted:#94a3b8; --sidebar-width:240px;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Segoe UI',sans-serif; background:var(--bg); color:var(--text); display:flex; min-height:100vh; }
+    .sidebar { width:var(--sidebar-width); min-height:100vh; background:var(--sidebar-bg); border-right:1px solid var(--border); display:flex; flex-direction:column; position:fixed; top:0; left:0; z-index:50; backdrop-filter:blur(20px); transition:transform 0.3s; }
+    .sidebar-logo { padding:24px 20px; display:flex; align-items:center; gap:10px; border-bottom:1px solid var(--border); }
+    .sidebar-logo i { color:var(--accent); font-size:22px; }
+    .sidebar-logo span { font-size:18px; font-weight:700; background:linear-gradient(90deg,#6366f1,#22d3ee); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .sidebar-nav { flex:1; padding:16px 12px; overflow-y:auto; }
+    .nav-section-label { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; padding:12px 8px 6px; }
+    .nav-item { display:flex; align-items:center; gap:12px; padding:11px 12px; border-radius:10px; margin-bottom:2px; color:var(--muted); text-decoration:none; font-size:14px; transition:all 0.2s; cursor:pointer; }
+    .nav-item:hover { background:rgba(255,255,255,0.06); color:var(--text); }
+    .nav-item.active { background:rgba(99,102,241,0.15); color:var(--accent); }
+    .nav-item i { width:18px; text-align:center; font-size:15px; }
+    .sidebar-bottom { padding:16px 12px; border-top:1px solid var(--border); }
+    .user-card { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:10px; background:rgba(255,255,255,0.04); cursor:pointer; }
+    .avatar { width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg,#6366f1,#22d3ee); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; color:white; flex-shrink:0; }
+    .user-info .name { font-size:13px; font-weight:600; }
+    .user-info .email { font-size:11px; color:var(--muted); }
+    .main { margin-left:var(--sidebar-width); flex:1; display:flex; flex-direction:column; }
+    .topbar { display:flex; align-items:center; justify-content:space-between; padding:16px 28px; border-bottom:1px solid var(--border); background:rgba(15,23,42,0.8); backdrop-filter:blur(20px); position:sticky; top:0; z-index:40; }
+    .topbar-left h1 { font-size:20px; font-weight:700; }
+    .topbar-left p { font-size:13px; color:var(--muted); margin-top:2px; }
+    .btn-primary { display:flex; align-items:center; gap:8px; padding:9px 18px; border-radius:10px; background:var(--accent); color:white; border:none; font-size:14px; font-weight:600; cursor:pointer; transition:all 0.2s; }
+    .btn-primary:hover { background:#4f46e5; transform:translateY(-1px); }
+    .hamburger { display:none; background:none; border:none; color:var(--text); font-size:20px; cursor:pointer; }
+    .content { padding:28px; flex:1; }
+
+    /* SUMMARY */
+    .summary-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:20px; margin-bottom:28px; }
+    .sum-card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:20px; text-align:center; }
+    .sum-val { font-size:22px; font-weight:800; margin:8px 0 4px; }
+    .sum-lbl { font-size:12px; color:var(--muted); }
+    .sum-icon { font-size:24px; }
+
+    /* MAIN GRID */
+    .main-grid { display:grid; grid-template-columns:1fr 360px; gap:24px; }
+
+    /* BUDGET LIST */
+    .card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:24px; }
+    .card-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
+    .card-title { font-size:16px; font-weight:700; }
+
+    .budget-items { display:flex; flex-direction:column; gap:16px; }
+    .budget-item { background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:14px; padding:18px; transition:all 0.2s; }
+    .budget-item:hover { border-color:rgba(99,102,241,0.3); }
+    .budget-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+    .budget-left { display:flex; align-items:center; gap:12px; }
+    .b-icon { width:38px; height:38px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; }
+    .b-name { font-size:14px; font-weight:700; }
+    .b-cat { font-size:12px; color:var(--muted); margin-top:2px; }
+    .budget-right { text-align:right; }
+    .b-spent { font-size:14px; font-weight:700; }
+    .b-limit { font-size:12px; color:var(--muted); }
+    .prog-bar { height:8px; background:rgba(255,255,255,0.08); border-radius:50px; overflow:hidden; margin-bottom:8px; }
+    .prog-fill { height:100%; border-radius:50px; transition:width 0.8s ease; }
+    .budget-footer { display:flex; justify-content:space-between; align-items:center; }
+    .b-pct { font-size:12px; color:var(--muted); }
+    .b-status { font-size:11px; padding:3px 10px; border-radius:50px; font-weight:600; }
+    .status-ok { background:rgba(34,197,94,0.15); color:#22c55e; }
+    .status-warn { background:rgba(251,191,36,0.15); color:#fbbf24; }
+    .status-over { background:rgba(239,68,68,0.15); color:#ef4444; }
+    .btn-edit-b { background:none; border:none; color:var(--muted); cursor:pointer; font-size:13px; padding:4px 8px; border-radius:6px; transition:all 0.2s; }
+    .btn-edit-b:hover { color:var(--accent); background:rgba(99,102,241,0.1); }
+
+    /* SIDEBAR PANEL */
+    .side-panel { display:flex; flex-direction:column; gap:20px; }
+    .chart-wrap { position:relative; height:200px; margin-bottom:8px; }
+    .add-budget-form { display:flex; flex-direction:column; gap:14px; }
+    .form-group label { display:block; font-size:13px; color:var(--muted); margin-bottom:6px; }
+    .form-group input, .form-group select { width:100%; padding:11px 14px; background:rgba(255,255,255,0.05); border:1px solid var(--border); border-radius:10px; color:var(--text); font-size:14px; outline:none; transition:all 0.2s; }
+    .form-group input:focus, .form-group select:focus { border-color:var(--accent); background:rgba(99,102,241,0.08); }
+    .form-group select option { background:#1e293b; }
+    .tips-list { display:flex; flex-direction:column; gap:10px; }
+    .tip-item { display:flex; gap:10px; align-items:flex-start; padding:12px; background:rgba(255,255,255,0.03); border-radius:10px; border:1px solid var(--border); }
+    .tip-icon { font-size:16px; flex-shrink:0; }
+    .tip-text { font-size:12px; color:var(--muted); line-height:1.5; }
+    .tip-text strong { color:var(--text); }
+
+    /* MODAL */
+    .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.7); backdrop-filter:blur(8px); z-index:100; display:none; align-items:center; justify-content:center; }
+    .modal-overlay.show { display:flex; }
+    .modal { background:#1e293b; border:1px solid var(--border); border-radius:20px; padding:32px; width:440px; max-width:95vw; }
+    .modal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; }
+    .modal-header h3 { font-size:18px; font-weight:700; }
+    .modal-close { background:none; border:none; color:var(--muted); font-size:20px; cursor:pointer; }
+    .form-group { margin-bottom:16px; }
+    .btn-submit { width:100%; padding:13px; border-radius:10px; border:none; font-size:15px; font-weight:700; background:var(--accent); color:white; cursor:pointer; transition:all 0.2s; margin-top:8px; }
+    .btn-submit:hover { background:#4f46e5; }
+    .btn-danger { background:rgba(239,68,68,0.15); color:var(--red); border:1px solid rgba(239,68,68,0.3); padding:10px; border-radius:8px; cursor:pointer; font-size:13px; transition:all 0.2s; width:100%; margin-top:8px; }
+    .btn-danger:hover { background:rgba(239,68,68,0.25); }
+
+    .sidebar-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:49; }
+    @media(max-width:1024px) { .main-grid { grid-template-columns:1fr; } .summary-grid { grid-template-columns:1fr 1fr; } }
+    @media(max-width:768px) {
+      .sidebar { transform:translateX(-100%); } .sidebar.open { transform:translateX(0); }
+      .sidebar-overlay.show { display:block; } .main { margin-left:0; } .hamburger { display:block; }
+      .content { padding:16px; } .topbar { padding:12px 16px; } .summary-grid { grid-template-columns:1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo"><i class="fas fa-chart-line"></i><span>FinTrack</span></div>
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Main</div>
+    <a class="nav-item" href="dashboard.html"><i class="fas fa-house"></i> Dashboard</a>
+    <a class="nav-item" href="transactions.html"><i class="fas fa-arrow-right-arrow-left"></i> Transactions</a>
+    <a class="nav-item" href="income.html"><i class="fas fa-arrow-trend-up"></i> Income</a>
+    <a class="nav-item" href="expenses.html"><i class="fas fa-arrow-trend-down"></i> Expenses</a>
+    <div class="nav-section-label">Planning</div>
+    <a class="nav-item active" href="budget.html"><i class="fas fa-wallet"></i> Budget Planner</a>
+    <a class="nav-item" href="goals.html"><i class="fas fa-bullseye"></i> Savings Goals</a>
+    <a class="nav-item" href="recurring.html"><i class="fas fa-rotate"></i> Recurring</a>
+    <a class="nav-item" href="calendar.html"><i class="fas fa-calendar-days"></i> Calendar</a>
+    <div class="nav-section-label">Analytics</div>
+    <a class="nav-item" href="reports.html"><i class="fas fa-chart-pie"></i> Reports</a>
+    <div class="nav-section-label">Account</div>
+    <a class="nav-item" href="profile.html"><i class="fas fa-user"></i> Profile</a>
+    <a class="nav-item" href="settings.html"><i class="fas fa-gear"></i> Settings</a>
+    <a class="nav-item" href="appearance.html"><i class="fas fa-palette"></i> Themes</a>
+    <a class="nav-item" onclick="logout()"><i class="fas fa-right-from-bracket"></i> Logout</a>
+  </nav>
+  <div class="sidebar-bottom">
+    <div class="user-card">
+      <div class="avatar" id="sidebarAvatar">J</div>
+      <div class="user-info">
+        <div class="name" id="sidebarName">Loading...</div>
+        <div class="email" id="sidebarEmail">...</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:14px">
+      <button class="hamburger" onclick="openSidebar()"><i class="fas fa-bars"></i></button>
+      <div class="topbar-left">
+        <h1>Budget Planner</h1>
+        <p>Set limits and track your spending</p>
+      </div>
+    </div>
+    <button class="btn-primary" onclick="openModal()"><i class="fas fa-plus"></i> Add Budget</button>
+  </div>
+
+  <div class="content">
+    <!-- SUMMARY -->
+    <div class="summary-grid">
+      <div class="sum-card">
+        <div class="sum-icon">💰</div>
+        <div class="sum-val" style="color:#6366f1" id="sumTotal">₹0</div>
+        <div class="sum-lbl">Total Budget</div>
+      </div>
+      <div class="sum-card">
+        <div class="sum-icon">💸</div>
+        <div class="sum-val" style="color:#ef4444" id="sumSpent">₹0</div>
+        <div class="sum-lbl">Total Spent</div>
+      </div>
+      <div class="sum-card">
+        <div class="sum-icon">✅</div>
+        <div class="sum-val" style="color:#22c55e" id="sumRemaining">₹0</div>
+        <div class="sum-lbl">Remaining</div>
+      </div>
+      <div class="sum-card">
+        <div class="sum-icon">⚠️</div>
+        <div class="sum-val" style="color:#fbbf24" id="sumOver">0</div>
+        <div class="sum-lbl">Over Budget</div>
+      </div>
+    </div>
+
+    <div class="main-grid">
+      <!-- BUDGETS -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">My Budgets</span>
+          <span style="font-size:13px;color:var(--muted)" id="budgetMonth"></span>
+        </div>
+        <div class="budget-items" id="budgetList">
+          <div style="text-align:center;padding:40px;color:var(--muted)">
+            <i class="fas fa-wallet" style="font-size:40px;opacity:0.3;display:block;margin-bottom:12px"></i>
+            <p>No budgets yet. Click "Add Budget" to get started!</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- SIDE PANEL -->
+      <div class="side-panel">
+        <div class="card">
+          <div class="card-header"><span class="card-title">Budget Overview</span></div>
+          <div class="chart-wrap"><canvas id="budgetChart"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">Quick Add Budget</span></div>
+          <div class="add-budget-form">
+            <div class="form-group">
+              <label>Category</label>
+              <select id="quickCat">
+                <option>Food</option><option>Grocery</option><option>Transport</option>
+                <option>Shopping</option><option>Entertainment</option><option>Health</option>
+                <option>Education</option><option>Rent</option><option>Electricity</option>
+                <option>Internet</option><option>Subscriptions</option><option>Others</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Monthly Limit (₹)</label>
+              <input type="number" id="quickLimit" placeholder="e.g. 5000" min="0"/>
+            </div>
+            <button class="btn-primary" onclick="quickAdd()" style="width:100%;justify-content:center"><i class="fas fa-plus"></i> Add Budget</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">💡 Budget Tips</span></div>
+          <div class="tips-list">
+            <div class="tip-item"><span class="tip-icon">🎯</span><div class="tip-text"><strong>50/30/20 Rule:</strong> 50% needs, 30% wants, 20% savings.</div></div>
+            <div class="tip-item"><span class="tip-icon">📊</span><div class="tip-text"><strong>Track daily:</strong> Log every expense to stay on top of your budget.</div></div>
+            <div class="tip-item"><span class="tip-icon">🔔</span><div class="tip-text"><strong>Set alerts:</strong> Get notified when you reach 80% of a budget.</div></div>
+            <div class="tip-item"><span class="tip-icon">📅</span><div class="tip-text"><strong>Review monthly:</strong> Adjust budgets based on last month's spending.</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modalTitle">Add Budget</h3>
+      <button class="modal-close" onclick="closeModal()"><i class="fas fa-xmark"></i></button>
+    </div>
+    <div class="form-group">
+      <label>Category</label>
+      <select id="mCat">
+        <option>Food</option><option>Grocery</option><option>Transport</option>
+        <option>Shopping</option><option>Entertainment</option><option>Health</option>
+        <option>Education</option><option>Rent</option><option>Electricity</option>
+        <option>Internet</option><option>Subscriptions</option><option>Others</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Monthly Limit (₹)</label>
+      <input type="number" id="mLimit" placeholder="e.g. 5000" min="0"/>
+    </div>
+    <div class="form-group">
+      <label>Icon</label>
+      <select id="mIcon">
+        <option value="🍔">🍔 Food</option><option value="🛒">🛒 Grocery</option>
+        <option value="🚗">🚗 Transport</option><option value="🛍️">🛍️ Shopping</option>
+        <option value="🎬">🎬 Entertainment</option><option value="💊">💊 Health</option>
+        <option value="📚">📚 Education</option><option value="🏠">🏠 Rent</option>
+        <option value="⚡">⚡ Electricity</option><option value="🌐">🌐 Internet</option>
+        <option value="📱">📱 Subscriptions</option><option value="💼">💼 Others</option>
+      </select>
+    </div>
+    <button class="btn-submit" onclick="saveBudget()">Save Budget</button>
+    <button class="btn-danger" id="deleteBtn" onclick="deleteBudget()" style="display:none"><i class="fas fa-trash"></i> Delete Budget</button>
+  </div>
+</div>
+
+<script src="../js/theme.js"></script>
+<script src="../js/api.js"></script>
+<script src="../js/budget.js"></script>
+</body>
+</html>

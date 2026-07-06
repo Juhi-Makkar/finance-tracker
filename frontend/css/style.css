@@ -1,0 +1,176 @@
+/* ============================================
+   FINTRACK — GLOBAL STYLES (style.css)
+   Shared across all pages
+   ============================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 { font-weight: 700; line-height: 1.2; }
+p { line-height: 1.6; }
+a { text-decoration: none; color: inherit; }
+
+/* Utility classes */
+.text-green  { color: var(--green)  !important; }
+.text-red    { color: var(--red)    !important; }
+.text-accent { color: var(--accent) !important; }
+.text-yellow { color: var(--yellow) !important; }
+.text-muted  { color: var(--muted)  !important; }
+.fw-700      { font-weight: 700; }
+.fw-800      { font-weight: 800; }
+
+/* Flex utilities */
+.flex        { display: flex; }
+.flex-center { display: flex; align-items: center; justify-content: center; }
+.flex-between{ display: flex; align-items: center; justify-content: space-between; }
+.gap-8  { gap: 8px; }
+.gap-12 { gap: 12px; }
+.gap-16 { gap: 16px; }
+
+/* Gradient text */
+.gradient-text {
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Logo gradient */
+.logo-text {
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 700;
+}
+
+/* Common card styles */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: var(--transition);
+}
+.btn-primary-global { background: var(--accent); color: white; }
+.btn-primary-global:hover { opacity: 0.9; transform: translateY(-1px); }
+.btn-outline-global { background: transparent; color: var(--text); border: 1px solid var(--border); }
+.btn-outline-global:hover { border-color: var(--accent); color: var(--accent); }
+
+/* Form elements */
+.input-global {
+  width: 100%;
+  padding: 12px 14px;
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 14px;
+  outline: none;
+  font-family: inherit;
+  transition: var(--transition);
+}
+.input-global:focus { border-color: var(--accent); }
+.input-global::placeholder { color: var(--muted); }
+
+/* Badge */
+.badge-global {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 50px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* Empty state */
+.empty-state {
+  text-align: center;
+  padding: 48px 20px;
+  color: var(--muted);
+}
+.empty-state i {
+  font-size: 42px;
+  opacity: 0.3;
+  display: block;
+  margin-bottom: 14px;
+}
+.empty-state h3 { font-size: 16px; color: var(--text); margin-bottom: 6px; }
+.empty-state p  { font-size: 13px; }
+
+/* Alert banners */
+.alert-global {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+.alert-success-g { background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.3); color: #86efac; }
+.alert-error-g   { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: #fca5a5; }
+.alert-info-g    { background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.3); color: #a5b4fc; }
+.alert-warn-g    { background: rgba(251,191,36,0.1); border: 1px solid rgba(251,191,36,0.3); color: #fde68a; }
+
+/* Divider */
+.divider-global {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--muted);
+  font-size: 13px;
+  margin: 20px 0;
+}
+.divider-global::before,
+.divider-global::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* Mobile overlay */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 49;
+  backdrop-filter: blur(2px);
+}
+.sidebar-overlay.show { display: block; }
+
+/* Responsive helpers */
+@media (max-width: 768px) {
+  .hide-mobile { display: none !important; }
+  .main { margin-left: 0 !important; }
+  .sidebar { transform: translateX(-100%); }
+  .sidebar.open { transform: translateX(0); }
+}
+@media (min-width: 769px) {
+  .hide-desktop { display: none !important; }
+}

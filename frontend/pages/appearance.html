@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Themes — FinTrack</title>
+  <link rel="stylesheet" href="../css/style.css"/>
+  <link rel="stylesheet" href="../css/themes.css"/>
+  <link rel="stylesheet" href="../css/animations.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <style>
+    .sidebar { width:var(--sidebar-width); min-height:100vh; background:var(--sidebar-bg); border-right:1px solid var(--border); display:flex; flex-direction:column; position:fixed; top:0; left:0; z-index:50; backdrop-filter:var(--blur); transition:transform 0.3s; }
+    .sidebar-logo { padding:24px 20px; display:flex; align-items:center; gap:10px; border-bottom:1px solid var(--border); }
+    .sidebar-logo i { color:var(--accent); font-size:22px; }
+    .sidebar-nav { flex:1; padding:16px 12px; overflow-y:auto; }
+    .nav-section-label { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; padding:12px 8px 6px; }
+    .nav-item { display:flex; align-items:center; gap:12px; padding:11px 12px; border-radius:10px; margin-bottom:2px; color:var(--muted); text-decoration:none; font-size:14px; transition:all 0.2s; cursor:pointer; }
+    .nav-item:hover { background:rgba(255,255,255,0.06); color:var(--text); }
+    .nav-item.active { background:rgba(99,102,241,0.15); color:var(--accent); }
+    .nav-item i { width:18px; text-align:center; font-size:15px; }
+    .sidebar-bottom { padding:16px 12px; border-top:1px solid var(--border); }
+    .user-card { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:10px; background:rgba(255,255,255,0.04); cursor:pointer; }
+    .avatar { width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg,#6366f1,#22d3ee); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; color:white; flex-shrink:0; }
+    .user-info .name { font-size:13px; font-weight:600; }
+    .user-info .email { font-size:11px; color:var(--muted); }
+    .main { margin-left:var(--sidebar-width); flex:1; display:flex; flex-direction:column; }
+    .topbar { display:flex; align-items:center; padding:16px 28px; border-bottom:1px solid var(--border); background:var(--nav-bg); backdrop-filter:var(--blur); position:sticky; top:0; z-index:40; gap:14px; }
+    .topbar h1 { font-size:20px; font-weight:700; }
+    .content { padding:28px; flex:1; }
+
+    /* ACTIVE THEME CARD */
+    .active-theme-card { background:var(--card); border:2px solid var(--accent); border-radius:20px; padding:24px; margin-bottom:32px; display:flex; align-items:center; gap:20px; }
+    .active-preview { width:120px; height:80px; border-radius:12px; flex-shrink:0; }
+    .active-info h3 { font-size:18px; font-weight:700; margin-bottom:6px; }
+    .active-info p { font-size:13px; color:var(--muted); margin-bottom:12px; }
+    .active-badge { display:inline-flex; align-items:center; gap:6px; padding:5px 14px; border-radius:50px; background:rgba(99,102,241,0.15); color:var(--accent); font-size:12px; font-weight:700; }
+
+    /* THEMES GRID */
+    .themes-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:20px; margin-bottom:32px; }
+    .theme-card { border-radius:16px; padding:20px; cursor:pointer; border:2px solid transparent; transition:all 0.3s; position:relative; overflow:hidden; }
+    .theme-card:hover { transform:translateY(-4px); box-shadow:0 16px 40px rgba(0,0,0,0.3); }
+    .theme-card.active-card { border-color:#6366f1 !important; }
+    .theme-preview { height:90px; border-radius:10px; margin-bottom:14px; }
+    .theme-name { font-size:15px; font-weight:700; margin-bottom:4px; }
+    .theme-desc { font-size:12px; margin-bottom:14px; opacity:0.7; }
+    .theme-active-badge { position:absolute; top:12px; right:12px; background:#6366f1; color:white; font-size:10px; padding:3px 10px; border-radius:50px; font-weight:700; }
+    .btn-apply { width:100%; padding:10px; border-radius:10px; font-size:13px; font-weight:700; cursor:pointer; transition:all 0.2s; border:none; }
+
+    /* OPTIONS */
+    .section-title { font-size:18px; font-weight:700; margin-bottom:6px; }
+    .section-sub { font-size:13px; color:var(--muted); margin-bottom:24px; }
+    .options-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:16px; margin-bottom:32px; }
+    .option-card { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:18px; }
+    .option-title { font-size:11px; font-weight:700; margin-bottom:12px; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; }
+    .option-btns { display:flex; gap:8px; flex-wrap:wrap; }
+    .opt-btn { padding:7px 14px; border-radius:8px; border:1px solid var(--border); background:transparent; color:var(--muted); font-size:12px; cursor:pointer; transition:all 0.2s; }
+    .opt-btn.active { background:rgba(99,102,241,0.15); border-color:var(--accent); color:var(--accent); }
+    .opt-btn:hover { border-color:var(--accent); color:var(--accent); }
+
+    .hamburger { display:none; background:none; border:none; color:var(--text); font-size:20px; cursor:pointer; }
+    .sidebar-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:49; }
+    @media(max-width:768px) { .sidebar { transform:translateX(-100%); } .sidebar.open { transform:translateX(0); } .sidebar-overlay.show { display:block; } .main { margin-left:0; } .hamburger { display:block; } .content { padding:16px; } .topbar { padding:12px 16px; } .active-theme-card { flex-direction:column; } }
+  </style>
+</head>
+<body>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo"><i class="fas fa-chart-line"></i><span class="logo-text">FinTrack</span></div>
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Main</div>
+    <a class="nav-item" href="dashboard.html"><i class="fas fa-house"></i> Dashboard</a>
+    <a class="nav-item" href="transactions.html"><i class="fas fa-arrow-right-arrow-left"></i> Transactions</a>
+    <a class="nav-item" href="income.html"><i class="fas fa-arrow-trend-up"></i> Income</a>
+    <a class="nav-item" href="expenses.html"><i class="fas fa-arrow-trend-down"></i> Expenses</a>
+    <div class="nav-section-label">Planning</div>
+    <a class="nav-item" href="budget.html"><i class="fas fa-wallet"></i> Budget Planner</a>
+    <a class="nav-item" href="goals.html"><i class="fas fa-bullseye"></i> Savings Goals</a>
+    <a class="nav-item" href="recurring.html"><i class="fas fa-rotate"></i> Recurring</a>
+    <a class="nav-item" href="calendar.html"><i class="fas fa-calendar-days"></i> Calendar</a>
+    <div class="nav-section-label">Analytics</div>
+    <a class="nav-item" href="reports.html"><i class="fas fa-chart-pie"></i> Reports</a>
+    <div class="nav-section-label">Account</div>
+    <a class="nav-item" href="profile.html"><i class="fas fa-user"></i> Profile</a>
+    <a class="nav-item" href="settings.html"><i class="fas fa-gear"></i> Settings</a>
+    <a class="nav-item active" href="appearance.html"><i class="fas fa-palette"></i> Themes</a>
+    <a class="nav-item" onclick="logout()"><i class="fas fa-right-from-bracket"></i> Logout</a>
+  </nav>
+  <div class="sidebar-bottom">
+    <div class="user-card">
+      <div class="avatar" id="sidebarAvatar">J</div>
+      <div class="user-info"><div class="name" id="sidebarName">Loading...</div><div class="email" id="sidebarEmail">...</div></div>
+    </div>
+  </div>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <button class="hamburger" onclick="openSidebar()"><i class="fas fa-bars"></i></button>
+    <h1>🎨 Theme Studio</h1>
+  </div>
+  <div class="content">
+
+    <!-- CURRENT THEME -->
+    <div class="section-title">Current Theme</div>
+    <div class="active-theme-card" id="activeThemeCard">
+      <div class="active-preview" id="activeThemePreview"></div>
+      <div class="active-info">
+        <h3 id="activeThemeName">Apple Glassmorphism</h3>
+        <p id="activeThemeDesc">Elegant frosted glass UI inspired by Apple Vision Pro</p>
+        <div class="active-badge"><i class="fas fa-check"></i> Currently Active</div>
+      </div>
+    </div>
+
+    <!-- THEME GALLERY -->
+    <div class="section-title">Theme Gallery</div>
+    <p class="section-sub">Click any theme to apply it instantly across the entire app</p>
+    <div class="themes-grid" id="themesGrid"></div>
+
+    <!-- APPEARANCE OPTIONS -->
+    <div class="section-title">Appearance Options</div>
+    <div class="options-grid">
+      <div class="option-card">
+        <div class="option-title">Font Size</div>
+        <div class="option-btns">
+          <button class="opt-btn" onclick="setOption(this,'font','small',()=>setFontSize('small'))">Small</button>
+          <button class="opt-btn active" onclick="setOption(this,'font','medium',()=>setFontSize('medium'))">Medium</button>
+          <button class="opt-btn" onclick="setOption(this,'font','large',()=>setFontSize('large'))">Large</button>
+        </div>
+      </div>
+      <div class="option-card">
+        <div class="option-title">Border Radius</div>
+        <div class="option-btns">
+          <button class="opt-btn" onclick="setOption(this,'radius','compact',()=>setBorderRadius('compact'))">Compact</button>
+          <button class="opt-btn active" onclick="setOption(this,'radius','default',()=>setBorderRadius('default'))">Default</button>
+          <button class="opt-btn" onclick="setOption(this,'radius','rounded',()=>setBorderRadius('rounded'))">Rounded</button>
+        </div>
+      </div>
+      <div class="option-card">
+        <div class="option-title">Animations</div>
+        <div class="option-btns">
+          <button class="opt-btn active" id="animOn" onclick="setOption(this,'anim','on',()=>setAnimations(true))">Enabled</button>
+          <button class="opt-btn" id="animOff" onclick="setOption(this,'anim','off',()=>setAnimations(false))">Disabled</button>
+        </div>
+      </div>
+      <div class="option-card">
+        <div class="option-title">Sidebar Style</div>
+        <div class="option-btns">
+          <button class="opt-btn active" onclick="setOption(this,'sidebar','glass')">Glass</button>
+          <button class="opt-btn" onclick="setOption(this,'sidebar','solid')">Solid</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="../js/theme.js"></script>
+<script>
+  const THEMES_DATA = [
+    {
+      id: 'glass',
+      name: 'Apple Glassmorphism',
+      desc: 'Elegant frosted glass UI inspired by Apple Vision Pro',
+      bg: '#0F172A',
+      preview: 'linear-gradient(135deg,rgba(99,102,241,0.5),rgba(34,211,238,0.3))',
+      textColor: 'white',
+      btnBg: '#6366f1',
+      btnColor: 'white',
+      borderColor: 'rgba(255,255,255,0.15)'
+    },
+    {
+      id: 'luxury',
+      name: 'Black & Gold Luxury',
+      desc: 'Premium banking experience with rich gold accents',
+      bg: '#111111',
+      preview: 'linear-gradient(135deg,#D4AF37,#8B6914)',
+      textColor: 'white',
+      btnBg: '#D4AF37',
+      btnColor: 'black',
+      borderColor: 'rgba(212,175,55,0.3)'
+    },
+    {
+      id: 'beige',
+      name: 'Beige + Cream Minimal',
+      desc: 'Clean, calm and aesthetically pleasing minimal design',
+      bg: '#F5F1E8',
+      preview: 'linear-gradient(135deg,#c9b99a,#e8e0d0)',
+      textColor: '#3d2b1f',
+      btnBg: '#8B7355',
+      btnColor: 'white',
+      borderColor: 'rgba(139,115,85,0.3)'
+    },
+    {
+      id: 'trading',
+      name: 'TradingView Professional',
+      desc: 'Professional financial analytics dashboard look',
+      bg: '#131722',
+      preview: 'linear-gradient(135deg,#2962FF,#0D47A1)',
+      textColor: '#D1D4DC',
+      btnBg: '#2962FF',
+      btnColor: 'white',
+      borderColor: 'rgba(41,98,255,0.3)'
+    },
+  ];
+
+  let activeTheme = getCurrentTheme();
+
+  document.addEventListener('DOMContentLoaded', () => {
+    checkAuth();
+    renderThemes();
+    updateActiveDisplay(activeTheme);
+    loadOptionStates();
+  });
+
+  function checkAuth() {
+    const user = JSON.parse(localStorage.getItem('user') || 'null');
+    if (!user) { window.location.href = 'login.html'; return; }
+    document.getElementById('sidebarAvatar').textContent = ((user.firstName?.[0]||'')+(user.lastName?.[0]||'')).toUpperCase()||'U';
+    document.getElementById('sidebarName').textContent = `${user.firstName} ${user.lastName}`;
+    document.getElementById('sidebarEmail').textContent = user.email;
+  }
+
+  function renderThemes() {
+    const grid = document.getElementById('themesGrid');
+    grid.innerHTML = THEMES_DATA.map(t => `
+      <div class="theme-card ${activeTheme===t.id?'active-card':''}"
+           data-theme="${t.id}"
+           style="background:${t.bg};border-color:${activeTheme===t.id?'#6366f1':t.borderColor}"
+           onclick="selectTheme('${t.id}')">
+        ${activeTheme===t.id?'<div class="theme-active-badge">✓ Active</div>':''}
+        <div class="theme-preview" style="background:${t.preview}"></div>
+        <div class="theme-name" style="color:${t.textColor}">${t.name}</div>
+        <div class="theme-desc" style="color:${t.textColor}">${t.desc}</div>
+        <button class="btn-apply"
+          style="background:${t.btnBg};color:${t.btnColor}">
+          ${activeTheme===t.id?'✓ Applied':'Apply Theme'}
+        </button>
+      </div>`).join('');
+  }
+
+  function selectTheme(id) {
+    activeTheme = id;
+    applyTheme(id, true);
+    renderThemes();
+    updateActiveDisplay(id);
+  }
+
+  function updateActiveDisplay(id) {
+    const t = THEMES_DATA.find(t=>t.id===id) || THEMES_DATA[0];
+    document.getElementById('activeThemeName').textContent = t.name;
+    document.getElementById('activeThemeDesc').textContent = t.desc;
+    document.getElementById('activeThemePreview').style.background = t.preview;
+  }
+
+  function setOption(btn, group, val, callback) {
+    btn.closest('.option-btns').querySelectorAll('.opt-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    if (callback) callback();
+    localStorage.setItem('fintrack-opt-'+group, val);
+  }
+
+  function loadOptionStates() {
+    const font = localStorage.getItem('fintrack-opt-font') || 'medium';
+    const radius = localStorage.getItem('fintrack-opt-radius') || 'default';
+    const anim = localStorage.getItem('fintrack-animations');
+    // highlight saved options
+    document.querySelectorAll('.opt-btn').forEach(btn => {
+      const text = btn.textContent.trim().toLowerCase();
+      if (text === font || text === radius) btn.classList.add('active');
+    });
+    if (anim === 'false') {
+      document.getElementById('animOn').classList.remove('active');
+      document.getElementById('animOff').classList.add('active');
+    }
+  }
+
+  function logout() { localStorage.removeItem('token'); localStorage.removeItem('user'); window.location.href='login.html'; }
+  function openSidebar() { document.getElementById('sidebar').classList.add('open'); document.getElementById('sidebarOverlay').classList.add('show'); }
+  function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('sidebarOverlay').classList.remove('show'); }
+</script>
+</body>
+</html>
+
+<!-- appearance option is not working -->

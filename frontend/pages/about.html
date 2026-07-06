@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>About — FinTrack</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <link rel="stylesheet" href="../css/style.css"/>
+  <link rel="stylesheet" href="../css/themes.css"/>
+  <link rel="stylesheet" href="../css/animations.css"/>
+  <style>
+    :root { --bg:#0F172A; --card:rgba(255,255,255,0.06); --border:rgba(255,255,255,0.08); --accent:#6366f1; --green:#22c55e; --text:#f1f5f9; --muted:#94a3b8; }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body { font-family:'Segoe UI',sans-serif; background:var(--bg); color:var(--text); }
+    nav { position:fixed; top:0; left:0; right:0; z-index:100; display:flex; align-items:center; justify-content:space-between; padding:18px 60px; background:rgba(15,23,42,0.85); backdrop-filter:blur(20px); border-bottom:1px solid var(--border); }
+    .logo { display:flex; align-items:center; gap:10px; text-decoration:none; }
+    .logo i { color:var(--accent); font-size:22px; }
+    .logo span { font-size:18px; font-weight:700; background:linear-gradient(90deg,#6366f1,#22d3ee); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .nav-links { display:flex; gap:28px; list-style:none; }
+    .nav-links a { color:var(--muted); text-decoration:none; font-size:14px; transition:color 0.2s; }
+    .nav-links a:hover { color:var(--text); }
+    .btn-dash { padding:9px 20px; border-radius:8px; background:var(--accent); color:white; text-decoration:none; font-size:14px; font-weight:600; transition:all 0.2s; }
+    .btn-dash:hover { background:#4f46e5; }
+    .hero { padding:140px 60px 80px; text-align:center; position:relative; overflow:hidden; }
+    .hero::before { content:''; position:absolute; top:-100px; left:50%; transform:translateX(-50%); width:700px; height:700px; background:radial-gradient(circle,rgba(99,102,241,0.12) 0%,transparent 70%); pointer-events:none; }
+    .badge { display:inline-flex; align-items:center; gap:8px; padding:6px 16px; border-radius:50px; border:1px solid rgba(99,102,241,0.4); background:rgba(99,102,241,0.1); font-size:13px; color:#a5b4fc; margin-bottom:24px; }
+    .hero h1 { font-size:clamp(36px,5vw,60px); font-weight:800; line-height:1.1; margin-bottom:20px; }
+    .gradient { background:linear-gradient(90deg,#6366f1,#22d3ee); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .hero p { font-size:18px; color:var(--muted); max-width:580px; margin:0 auto; line-height:1.7; }
+    section { padding:80px 60px; }
+    .section-tag { display:inline-block; padding:5px 14px; border-radius:50px; background:rgba(99,102,241,0.1); border:1px solid rgba(99,102,241,0.3); color:#a5b4fc; font-size:13px; margin-bottom:14px; }
+    h2 { font-size:clamp(26px,3vw,38px); font-weight:700; margin-bottom:14px; }
+    .sub { color:var(--muted); font-size:16px; max-width:520px; line-height:1.7; margin-bottom:48px; }
+    .features-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:20px; }
+    .feat-card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:28px; transition:all 0.3s; }
+    .feat-card:hover { border-color:rgba(99,102,241,0.4); transform:translateY(-4px); }
+    .feat-icon { width:48px; height:48px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:20px; margin-bottom:16px; }
+    .feat-card h3 { font-size:16px; font-weight:700; margin-bottom:8px; }
+    .feat-card p { font-size:13px; color:var(--muted); line-height:1.6; }
+    .stats-row { display:grid; grid-template-columns:repeat(4,1fr); gap:20px; margin-bottom:60px; }
+    .stat-box { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:24px; text-align:center; }
+    .stat-num { font-size:36px; font-weight:800; background:linear-gradient(90deg,#6366f1,#22d3ee); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:6px; }
+    .stat-lbl { font-size:13px; color:var(--muted); }
+    .tech-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:16px; }
+    .tech-item { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:20px; text-align:center; transition:all 0.2s; }
+    .tech-item:hover { border-color:var(--accent); }
+    .tech-icon { font-size:32px; margin-bottom:10px; }
+    .tech-name { font-size:13px; font-weight:600; }
+    .tech-desc { font-size:11px; color:var(--muted); margin-top:4px; }
+    .cta { text-align:center; padding:80px 60px; }
+    .cta h2 { font-size:36px; font-weight:800; margin-bottom:16px; }
+    .cta p { color:var(--muted); font-size:16px; margin-bottom:32px; }
+    .btn-lg { padding:14px 32px; border-radius:10px; background:var(--accent); color:white; text-decoration:none; font-size:16px; font-weight:600; display:inline-flex; align-items:center; gap:8px; transition:all 0.2s; }
+    .btn-lg:hover { background:#4f46e5; transform:translateY(-2px); }
+    footer { padding:32px 60px; border-top:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; }
+    footer p { color:var(--muted); font-size:13px; }
+    @media(max-width:768px) { nav { padding:16px 20px; } .nav-links { display:none; } section, .cta { padding:60px 20px; } .hero { padding:120px 20px 60px; } .stats-row { grid-template-columns:1fr 1fr; } footer { padding:24px 20px; flex-direction:column; gap:12px; } }
+  </style>
+</head>
+<body>
+<nav>
+  <a class="logo" href="index.html"><i class="fas fa-chart-line"></i><span>FinTrack</span></a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="contact.html">Contact</a></li>
+  </ul>
+  <a class="btn-dash" href="dashboard.html">Go to Dashboard</a>
+</nav>
+
+<div class="hero">
+  <div class="badge"><i class="fas fa-info-circle"></i> About FinTrack</div>
+  <h1>Built for <span class="gradient">Smart Finance</span><br/>Management</h1>
+  <p>FinTrack is a full-featured personal finance tracker designed to help you take control of your money with ease and style.</p>
+</div>
+
+<section>
+  <div class="stats-row">
+    <div class="stat-box"><div class="stat-num">15+</div><div class="stat-lbl">Features</div></div>
+    <div class="stat-box"><div class="stat-num">4</div><div class="stat-lbl">Premium Themes</div></div>
+    <div class="stat-box"><div class="stat-num">25+</div><div class="stat-lbl">Expense Categories</div></div>
+    <div class="stat-box"><div class="stat-num">100%</div><div class="stat-lbl">Free to Use</div></div>
+  </div>
+  <div class="section-tag">✦ Features</div>
+  <h2>Everything in one place</h2>
+  <p class="sub">From daily tracking to yearly reports — FinTrack covers your entire financial life.</p>
+  <div class="features-grid">
+    <div class="feat-card"><div class="feat-icon" style="background:rgba(34,197,94,0.15);color:#22c55e"><i class="fas fa-arrow-trend-up"></i></div><h3>Income Tracking</h3><p>Track 11 income sources including salary, freelancing, investments and more.</p></div>
+    <div class="feat-card"><div class="feat-icon" style="background:rgba(239,68,68,0.15);color:#ef4444"><i class="fas fa-receipt"></i></div><h3>Expense Tracking</h3><p>25+ expense categories across household, food, transport, digital and health.</p></div>
+    <div class="feat-card"><div class="feat-icon" style="background:rgba(99,102,241,0.15);color:#6366f1"><i class="fas fa-chart-pie"></i></div><h3>Analytics & Reports</h3><p>Beautiful charts with pie, bar and line graphs powered by Chart.js.</p></div>
+    <div class="feat-card"><div class="feat-icon" style="background:rgba(251,191,36,0.15);color:#fbbf24"><i class="fas fa-wallet"></i></div><h3>Budget Planner</h3><p>Set monthly limits per category and get instant alerts when exceeded.</p></div>
+    <div class="feat-card"><div class="feat-icon" style="background:rgba(34,211,238,0.15);color:#22d3ee"><i class="fas fa-bullseye"></i></div><h3>Savings Goals</h3><p>Create goals with progress tracking, deadlines and monthly targets.</p></div>
+    <div class="feat-card"><div class="feat-icon" style="background:rgba(168,85,247,0.15);color:#a855f7"><i class="fas fa-palette"></i></div><h3>Premium Themes</h3><p>4 stunning themes — Glassmorphism, Luxury, Minimal and Professional.</p></div>
+  </div>
+</section>
+
+<section style="background:rgba(255,255,255,0.02);border-top:1px solid var(--border);border-bottom:1px solid var(--border)">
+  <div class="section-tag">✦ Tech Stack</div>
+  <h2>Built with modern tech</h2>
+  <p class="sub">FinTrack is built using industry-standard technologies for a fast, secure and scalable experience.</p>
+  <div class="tech-grid">
+    <div class="tech-item"><div class="tech-icon">🌐</div><div class="tech-name">HTML5</div><div class="tech-desc">Structure</div></div>
+    <div class="tech-item"><div class="tech-icon">🎨</div><div class="tech-name">CSS3</div><div class="tech-desc">Styling</div></div>
+    <div class="tech-item"><div class="tech-icon">⚡</div><div class="tech-name">JavaScript</div><div class="tech-desc">Frontend Logic</div></div>
+    <div class="tech-item"><div class="tech-icon">🟢</div><div class="tech-name">Node.js</div><div class="tech-desc">Backend</div></div>
+    <div class="tech-item"><div class="tech-icon">🚂</div><div class="tech-name">Express.js</div><div class="tech-desc">API Server</div></div>
+    <div class="tech-item"><div class="tech-icon">🍃</div><div class="tech-name">MongoDB</div><div class="tech-desc">Database</div></div>
+    <div class="tech-item"><div class="tech-icon">🔐</div><div class="tech-name">JWT Auth</div><div class="tech-desc">Security</div></div>
+    <div class="tech-item"><div class="tech-icon">📊</div><div class="tech-name">Chart.js</div><div class="tech-desc">Analytics</div></div>
+  </div>
+</section>
+
+<div class="cta">
+  <h2>Start tracking your finances</h2>
+  <p>Join FinTrack today — completely free, no credit card required.</p>
+  <a href="signup.html" class="btn-lg"><i class="fas fa-rocket"></i> Get Started Free</a>
+</div>
+
+<footer>
+  <div class="logo"><i class="fas fa-chart-line" style="color:var(--accent)"></i><span style="background:linear-gradient(90deg,#6366f1,#22d3ee);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:700;font-size:16px">FinTrack</span></div>
+  <p>© 2026 FinTrack. Built with ❤️</p>
+  <div style="display:flex;gap:20px"><a href="index.html" style="color:var(--muted);text-decoration:none;font-size:13px">Home</a><a href="contact.html" style="color:var(--muted);text-decoration:none;font-size:13px">Contact</a></div>
+</footer>
+
+<script src="../js/theme.js"></script>
+</body>
+</html>
+
+<!-- done -->
