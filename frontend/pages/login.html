@@ -115,6 +115,7 @@
       <div class="signup-link">Don't have an account? <a href="signup.html">Sign up for free</a></div>
     </div>
   </div>
+  <script src="../js/auth.js"></script>
   <script>
     // FIX 3: Clear password field on page load to prevent autofill
     window.addEventListener('load', () => {
@@ -131,61 +132,69 @@
       else { input.type='password'; icon.classList.replace('fa-eye-slash','fa-eye'); }
     }
 
-    function showError(msg) {
-      document.getElementById('errorText').textContent = msg;
-      document.getElementById('errorMsg').classList.add('show');
-      document.getElementById('successMsg').classList.remove('show');
-    }
-
-    function setLoading(loading) {
-      const btn=document.getElementById('loginBtn'), spinner=document.getElementById('spinner'), btnText=document.getElementById('btnText');
-      spinner.style.display = loading?'block':'none';
-      btnText.style.display = loading?'none':'flex';
-      btn.disabled = loading;
-    }
-
-    async function handleLogin(e) {
-      e.preventDefault();
-      const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value;
-      if (!email || !password) { showError('Please fill in all fields.'); return; }
-      setLoading(true);
-      try {
-        const res = await fetch('http://localhost:5000/api/auth/login', {
-          method:'POST', headers:{'Content-Type':'application/json'},
-          body: JSON.stringify({ email, password })
-        });
-        const data = await res.json();
-        if (res.ok) {
-          // FIX 1: Clear ALL old user data before saving new user's data
-          clearPreviousUserData();
-          // Save new user's token and info
-          localStorage.setItem('token', data.token);
-          localStorage.setItem('user', JSON.stringify(data.user));
-          document.getElementById('successMsg').classList.add('show');
-          document.getElementById('errorMsg').classList.remove('show');
-          // FIX 4: Check if admin and redirect accordingly
-          if (data.user.isAdmin) {
-            setTimeout(() => { window.location.href = 'admin.html'; }, 1200);
-          } else {
-            setTimeout(() => { window.location.href = 'dashboard.html'; }, 1200);
-          }
-        } else {
-          showError(data.message || 'Invalid email or password.');
-        }
-      } catch (err) {
-        showError('Cannot connect to server. Make sure backend is running.');
-      } finally {
-        setLoading(false);
-      }
-    }
-
     // FIX 1: Clear localStorage data of previous user on new login
     function clearPreviousUserData() {
       const keysToRemove = ['transactions','goals','budgets','recurring','settings'];
       keysToRemove.forEach(key => localStorage.removeItem(key));
       // Keep theme preference — it's not user-specific
     }
+
+    // Override handleLogin to clear previous data and handle admin redirect
+    const originalHandleLogin = window.handleLogin;
+    window.handleLogin = async function(event) {
+      event.preventDefault();
+      
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+
+      if (!email || !password) {
+        showError('Please enter email and password.');
+        return;
+      }
+
+      setLoading(true, 'loginBtn');
+      try {
+        const res = await fetch('http://localhost:5000/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          // Clear previous user data before saving new user's data
+          clearPreviousUserData();
+          // Store token and user data
+          localStorage.setItem('token', data.token);
+          localStorage.setItem('user', JSON.stringify(data.user));
+          
+          showSuccess('✓ Login successful! Redirecting...');
+          setTimeout(() => {
+            // Check if admin and redirect accordingly
+            if (data.user.isAdmin) {
+              window.location.href = 'admin.html';
+            } else {
+              window.location.href = 'dashboard.html';
+            }
+          }, 1500);
+        } else {
+          if (res.status === 403 && data.requiresVerification) {
+            showError('Please verify your email first.');
+            setTimeout(() => {
+              window.location.href = `verify-email.html?email=${encodeURIComponent(email)}`;
+            }, 2000);
+          } else {
+            showError(data.message || 'Invalid email or password.');
+          }
+        }
+      } catch (err) {
+        console.error('Login error:', err);
+        showError('Cannot connect to server. Make sure the backend is running.');
+      } finally {
+        setLoading(false, 'loginBtn');
+      }
+    };
   </script>
 </body>
 </html>
