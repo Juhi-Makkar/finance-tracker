@@ -122,10 +122,14 @@ const register = async (req, res) => {
     }
     
     res.status(201).json({
-      message: 'Account created successfully! Please check your email to verify your account.',
-      email: user.email,
-      requiresVerification: true,
-    });
+  message: 'Account created successfully!',
+  user: {
+    id: user._id,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    email: user.email
+  }
+});
   } catch (error) {
     console.error('Register error:', error);
     res.status(500).json({ message: 'Server error. Please try again.' });
