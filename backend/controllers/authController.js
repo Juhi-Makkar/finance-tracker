@@ -195,13 +195,13 @@ const resendVerificationEmail = async (req, res) => {
     user.emailVerificationToken = emailVerificationToken;
     user.emailVerificationExpiry = emailVerificationExpiry;
     await user.save();
-    
+    /*
     try {
       await sendVerificationEmail(email, emailVerificationToken, user.firstName);
     } catch (emailError) {
       console.error('Email sending error:', emailError);
       return res.status(500).json({ message: 'Failed to send verification email.' });
-    }
+    }*/
     
     res.json({ message: 'Verification email sent! Check your inbox.' });
   } catch (error) {
