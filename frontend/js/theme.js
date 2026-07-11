@@ -6,11 +6,7 @@
 const THEMES = ['glass', 'luxury', 'beige', 'trading'];
 const DEFAULT_THEME = 'glass';
 
-// Apply theme instantly on page load (before anything renders)
-(function applyThemeOnLoad() {
-  const saved = localStorage.getItem('fintrack-theme') || DEFAULT_THEME;
-  applyTheme(saved, false);
-})();
+
 
 // Main function to apply a theme
 function applyTheme(themeName, animate = true) {
@@ -81,6 +77,12 @@ function updateChartTheme(themeName) {
   Chart.defaults.scale.grid = { color: colors.grid };
   Chart.defaults.scale.ticks = { color: colors.tick };
 }
+
+// Apply theme instantly on page load (before anything renders)
+(function applyThemeOnLoad() {
+  const saved = localStorage.getItem('fintrack-theme') || DEFAULT_THEME;
+  applyTheme(saved, false);
+})();
 
 // Font size system
 function setFontSize(size) {
