@@ -346,7 +346,7 @@
 <script src="../js/theme.js"></script>
 
 <script>
-  const API = ['localhost', '127.0.0.1'].includes(window.location.hostname) ? 'http://localhost:5000/api/admin' : `${window.location.origin}/api/admin`;
+  const API = ['localhost', '127.0.0.1'].includes(window.location.hostname) ? 'http://localhost:5000/api/admin' : 'https://finance-tracker-3l07.onrender.com/api/admin';
   let usersPage = 1;
   let usersTotal = 0;
   let usersPages = 1;
@@ -375,10 +375,27 @@
   }
 
   async function apiFetch(url) {
+  try {
     const res = await fetch(url, { headers: getHeaders() });
-    if (!res.ok) throw new Error('API error');
-    return res.json();
+
+    const data = await res.json().catch(() => ({}));
+
+    if (res.status === 401) {
+      logout();
+      return null;
+    }
+
+    if (!res.ok) {
+      console.error("API Error:", data);
+      throw new Error(data.message || "API Error");
+    }
+
+    return data;
+  } catch (err) {
+    console.error(err);
+    throw err;
   }
+}
 
   function fmt(n) { return '₹'+Number(n).toLocaleString('en-IN',{minimumFractionDigits:0,maximumFractionDigits:0}); }
   function fmtDate(d) { return new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}); }
