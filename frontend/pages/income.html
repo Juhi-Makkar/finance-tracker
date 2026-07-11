@@ -189,7 +189,12 @@
     checkAuth();
     setDefaultDate();
     populateCategoryOptions();
+    try {
     await fetchIncomes();
+} catch (err) {
+    console.error(err);
+    alert("Failed to load income.");
+}
   }
 
   function checkAuth() {
@@ -239,8 +244,17 @@
   }
 
   async function fetchIncomes() {
-    const data = await apiRequest('/transactions?type=income&limit=1000');
-    transactions = Array.isArray(data) ? data : [];
+    const data = await apiRequest('/transactions?limit=1000');
+
+const allTransactions = Array.isArray(data)
+    ? data
+    : (data.transactions || []);
+
+transactions = allTransactions.filter(
+    t => t.type?.toLowerCase() === "income"
+);
+
+console.log(transactions);
     render();
   }
 
@@ -267,17 +281,28 @@
     }).reduce((sum, tx) => sum + Number(tx.amount || 0), 0);
     const year = inc.filter(tx => new Date(tx.date).getFullYear() === now.getFullYear())
       .reduce((sum, tx) => sum + Number(tx.amount || 0), 0);
-    const months = new Set(inc.map(tx => new Date(tx.date).getMonth())).size || 1;
+    const monthKeys = new Set(
+    inc.map(tx => {
+        const d = new Date(tx.date);
+        return `${d.getFullYear()}-${d.getMonth()}`;
+    })
+);
+
+const avg = total / (monthKeys.size || 1);
 
     document.getElementById('totalIncome').textContent = formatCurrency(total);
     document.getElementById('monthIncome').textContent = formatCurrency(month);
     document.getElementById('yearIncome').textContent = formatCurrency(year);
-    document.getElementById('avgIncome').textContent = formatCurrency(total / months);
+    document.getElementById('avgIncome').textContent = formatCurrency(avg);
 
     const categories = {};
-    inc.forEach(tx => {
-      categories[tx.category] = (categories[tx.category] || 0) + Number(tx.amount || 0);
-    });
+
+inc.forEach(tx => {
+  const category = tx.category?.trim() || "Others";
+
+  categories[category] =
+    (categories[category] || 0) + Number(tx.amount || 0);
+});
 
     document.getElementById('catGrid').innerHTML = Object.entries(categories)
       .sort((a, b) => b[1] - a[1])
@@ -301,7 +326,7 @@
               <div class="tx-date">${new Date(tx.date).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' })}${tx.description ? ' · ' + tx.description : ''}</div>
             </div>
             <div class="tx-amount">${formatCurrency(tx.amount)}</div>
-            <button class="btn-del" onclick="delIncome('${tx._id || tx.id}')"><i class="fas fa-trash"></i></button>
+            <button class="btn-del" onclick="delIncome('${tx._id}')"><i class="fas fa-trash"></i></button>
           </div>
         `).join('')
       : '<div class="empty"><i class="fas fa-arrow-trend-up"></i><p>No income recorded yet</p></div>';
