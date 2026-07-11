@@ -73,9 +73,12 @@ function updateChartTheme(themeName) {
   Chart.defaults.color = colors.tick;
   Chart.defaults.borderColor = colors.grid;
   Chart.defaults.plugins.legend.labels.color = colors.legend;
-  Chart.defaults.scale = Chart.defaults.scale || {};
-  Chart.defaults.scale.grid = { color: colors.grid };
-  Chart.defaults.scale.ticks = { color: colors.tick };
+  Chart.defaults.color = colors.tick;
+Chart.defaults.borderColor = colors.grid;
+
+if (Chart.defaults.plugins?.legend?.labels) {
+    Chart.defaults.plugins.legend.labels.color = colors.legend;
+}
 }
 
 // Apply theme instantly on page load (before anything renders)
