@@ -222,13 +222,13 @@ const login = async (req, res) => {
       return res.status(401).json({ message: 'Invalid email or password.' });
     
     // Check if email is verified
-    if (!user.isEmailVerified)
+/*    if (!user.isEmailVerified)
       return res.status(403).json({ 
         message: 'Please verify your email first.',
         requiresVerification: true,
         email: user.email,
       });
-    
+    */
     if (user.isBlocked)
       return res.status(403).json({ message: 'Your account has been blocked. Contact support.' });
     
