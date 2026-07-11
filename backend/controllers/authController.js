@@ -16,21 +16,23 @@ const generateVerificationToken = () => crypto.randomBytes(32).toString('hex');
 
 // Nodemailer transporter setup
 const getMailTransporter = () => {
-  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS)
-    throw new Error('Email service is not configured');
+  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+    throw new Error("Email service is not configured");
+  }
 
   return nodemailer.createTransport({
-    service: 'gmail',
+    host: "smtp.gmail.com",
+    port: 587,
+    secure: false,
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASS,
     },
-    tls: {
-      rejectUnauthorized: false  // Fix for certificate validation errors
-    }
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 10000,
   });
 };
-
 // Send email verification email
 const sendVerificationEmail = async (email, verificationToken, firstName) => {
   const transporter = getMailTransporter();
