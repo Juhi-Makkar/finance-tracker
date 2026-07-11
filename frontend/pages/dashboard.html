@@ -829,7 +829,10 @@ console.log("Expense:", expenseData);
 
     console.log(document.getElementById("barChart"));
 
-    barChartInstance = new Chart(document.getElementById('barChart'), {
+    const canvas = document.getElementById("barChart");
+const ctx = canvas.getContext("2d");
+
+barChartInstance = new Chart(ctx, {
       type: 'bar',
       data: {
         labels,
