@@ -10,6 +10,11 @@ const app = express();
 app.use(cors({ origin: '*', methods: ['GET','POST','PUT','DELETE'], allowedHeaders: ['Content-Type','Authorization'] }));
 app.use(express.json());
 
+// Serve the frontend from this server as well. When the backend is exposed
+// through ngrok, verification links can therefore open the real UI on any
+// device instead of redirecting users to their own localhost.
+app.use(express.static(path.join(__dirname, '../frontend')));
+
 // Routes
 app.use('/api/auth',         require('./routes/authRoutes'));
 app.use('/api/transactions', require('./routes/transactionRoutes'));

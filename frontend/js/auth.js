@@ -1,5 +1,9 @@
 // API Base URL
-const API_BASE_URL = 'http://localhost:5000/api/auth';
+// Public pages served through the backend use the same HTTPS origin. Local
+// development still uses the backend's port 5000.
+const API_BASE_URL = ['localhost', '127.0.0.1'].includes(window.location.hostname)
+  ? 'http://localhost:5000/api/auth'
+  : `${window.location.origin}/api/auth`;
 
 // =====================
 // SIGNUP FUNCTIONALITY
@@ -97,7 +101,7 @@ async function handleLogin(event) {
       
       showSuccess('✓ Login successful! Redirecting to dashboard...');
       setTimeout(() => {
-        window.location.href = '/dashboard.html';
+        window.location.href = 'dashboard.html';
       }, 1500);
     } else {
       if (res.status === 403 && data.requiresVerification) {
@@ -133,6 +137,16 @@ async function handleVerifyEmail(token) {
     const data = await res.json();
 
     if (res.ok) {
+      const statusIcon = document.getElementById('statusIcon');
+      if (statusIcon) {
+        statusIcon.classList.remove('pending');
+        statusIcon.classList.add('success');
+        statusIcon.innerHTML = '<i class="fas fa-check"></i>';
+      }
+      const title = document.getElementById('title');
+      const subtitle = document.getElementById('subtitle');
+      if (title) title.textContent = 'Email Verified!';
+      if (subtitle) subtitle.textContent = 'Your account is ready. Taking you to the login page...';
       showSuccess('✓ Email verified successfully! Redirecting to login...');
       setTimeout(() => {
         window.location.href = 'login.html';

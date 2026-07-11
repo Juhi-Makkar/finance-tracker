@@ -444,7 +444,7 @@
     </div>
     
     <div class="footer">
-      © 2025 FinTrack. All rights reserved.
+      © 2026 FinTrack. All rights reserved.
     </div>
   </div>
   
@@ -498,7 +498,7 @@
       
       setLoading(true, 'resendBtn');
       try {
-        const res = await fetch('http://localhost:5000/api/auth/resend-verification', {
+        const res = await fetch(`${API_BASE_URL}/resend-verification`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email })

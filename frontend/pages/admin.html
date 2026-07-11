@@ -346,7 +346,7 @@
 <script src="../js/theme.js"></script>
 
 <script>
-  const API = 'http://localhost:5000/api/admin';
+  const API = ['localhost', '127.0.0.1'].includes(window.location.hostname) ? 'http://localhost:5000/api/admin' : `${window.location.origin}/api/admin`;
   let usersPage = 1;
   let usersTotal = 0;
   let usersPages = 1;

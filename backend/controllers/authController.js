@@ -34,8 +34,11 @@ const getMailTransporter = () => {
 // Send email verification email
 const sendVerificationEmail = async (email, verificationToken, firstName) => {
   const transporter = getMailTransporter();
-  const backendBase = process.env.BACKEND_URL || 'http://localhost:5000';
-  const verificationLink = `${backendBase}/api/auth/verify-email?token=${verificationToken}`;
+  // This must be a live public URL in production. Keeping it explicit avoids
+  // accidentally sending links to a stale ngrok tunnel.
+  const backendBase = (process.env.BACKEND_URL || 'http://localhost:5000').replace(/\/$/, '');
+  const frontendBase = (process.env.FRONTEND_URL || `${backendBase}/pages`).replace(/\/$/, '');
+  const verificationLink = `${frontendBase}/verify-email.html?token=${encodeURIComponent(verificationToken)}`;
 
   await transporter.sendMail({
     from: process.env.EMAIL_USER,
@@ -301,14 +304,40 @@ const updateMe = async (req, res) => {
 const changePassword = async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ message: 'Current password and new password are required.' });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ message: 'New password must be at least 6 characters long.' });
+    }
+
+    // req.user comes only from the verified JWT in `protect`; never trust an
+    // email or user id supplied by the browser for this operation.
     const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    if (user.isBlocked) {
+      return res.status(403).json({ message: 'This account is blocked.' });
+    }
+
     const isMatch = await user.matchPassword(currentPassword);
-    if (!isMatch)
+    if (!isMatch) {
       return res.status(401).json({ message: 'Current password is incorrect.' });
+    }
+
+    if (await user.matchPassword(newPassword)) {
+      return res.status(400).json({ message: 'Your new password must be different from your current password.' });
+    }
+
     user.password = newPassword;
     await user.save();
     res.json({ message: 'Password changed successfully!' });
   } catch (error) {
+    console.error('Change password error:', error);
     res.status(500).json({ message: 'Server error.' });
   }
 };

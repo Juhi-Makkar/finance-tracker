@@ -459,7 +459,7 @@
 
       setLoading(true);
       try {
-        const res = await fetch('http://localhost:5000/api/auth/register', {
+        const res = await fetch(`${API_BASE_URL}/register`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ firstName, lastName, email, phone, password, currency })
@@ -481,3 +481,7 @@
 
 </body>
 </html>
+
+
+<!-- for manual testing of email verification, you can use the following PowerShell command to simulate the email verification process: -->
+<!-- Invoke-RestMethod -Uri http://localhost:5000/api/auth/verify-email -Method POST -ContentType 'application/json' -Body ('{{"token":"{0}"}}' -f 'YOUR_VERIFICATION_TOKEN_HERE') -->

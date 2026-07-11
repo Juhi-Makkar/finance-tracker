@@ -49,6 +49,7 @@
     .form-group label { display:block; font-size:13px; color:var(--muted); margin-bottom:7px; font-weight:500; }
     .form-group input, .form-group select { width:100%; padding:12px 14px; background:rgba(255,255,255,0.05); border:1px solid var(--border); border-radius:10px; color:var(--text); font-size:14px; outline:none; transition:all 0.2s; }
     .form-group input:focus, .form-group select:focus { border-color:var(--accent); background:rgba(99,102,241,0.08); }
+    .form-group input[readonly] { cursor:not-allowed; color:var(--muted); opacity:0.9; }
     .form-group input::placeholder { color:var(--muted); }
     .form-group select option { background:#1e293b; }
     .form-row { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
@@ -140,7 +141,7 @@
             <div class="form-group"><label>First Name</label><input type="text" id="editFirst" placeholder="First name"/></div>
             <div class="form-group"><label>Last Name</label><input type="text" id="editLast" placeholder="Last name"/></div>
           </div>
-          <div class="form-group"><label>Email Address</label><input type="email" id="editEmail" placeholder="your@email.com"/></div>
+          <div class="form-group"><label>Email Address</label><input type="email" id="editEmail" placeholder="your@email.com" readonly/></div>
           <div class="form-group"><label>Phone Number</label><input type="tel" id="editPhone" placeholder="+91 98765 43210"/></div>
           <div class="form-row">
             <div class="form-group"><label>Currency</label>
@@ -154,10 +155,12 @@
           <div class="card-title"><i class="fas fa-lock" style="color:var(--yellow)"></i> Change Password</div>
           <div class="alert alert-success" id="passAlert"><i class="fas fa-check-circle"></i> Password changed!</div>
           <div class="alert alert-error" id="passError"><i class="fas fa-circle-exclamation"></i> <span id="passErrText">Error</span></div>
-          <div class="form-group"><label>Current Password</label><div class="input-wrap"><input type="password" id="curPass" placeholder="Current password"/><i class="fas fa-eye toggle-eye" onclick="toggleEye('curPass',this)"></i></div></div>
-          <div class="form-group"><label>New Password</label><div class="input-wrap"><input type="password" id="newPass" placeholder="Min. 6 characters"/><i class="fas fa-eye toggle-eye" onclick="toggleEye('newPass',this)"></i></div></div>
-          <div class="form-group"><label>Confirm Password</label><div class="input-wrap"><input type="password" id="confPass" placeholder="Repeat password"/><i class="fas fa-eye toggle-eye" onclick="toggleEye('confPass',this)"></i></div></div>
-          <button class="btn-save" onclick="changePassword()"><i class="fas fa-key"></i> Change Password</button>
+          <form id="changePasswordForm" onsubmit="changePassword(event)" novalidate>
+            <div class="form-group"><label for="curPass">Current Password</label><div class="input-wrap"><input type="password" id="curPass" placeholder="Current password" autocomplete="current-password" required/><i class="fas fa-eye toggle-eye" onclick="toggleEye('curPass',this)"></i></div></div>
+            <div class="form-group"><label for="newPass">New Password</label><div class="input-wrap"><input type="password" id="newPass" placeholder="Min. 6 characters" autocomplete="new-password" minlength="6" required/><i class="fas fa-eye toggle-eye" onclick="toggleEye('newPass',this)"></i></div></div>
+            <div class="form-group"><label for="confPass">Confirm New Password</label><div class="input-wrap"><input type="password" id="confPass" placeholder="Repeat new password" autocomplete="new-password" minlength="6" required/><i class="fas fa-eye toggle-eye" onclick="toggleEye('confPass',this)"></i></div></div>
+            <button class="btn-save" id="changePasswordBtn" type="submit"><i class="fas fa-key"></i> Change Password</button>
+          </form>
         </div>
         <div class="card">
           <div class="card-title"><i class="fas fa-triangle-exclamation" style="color:var(--red)"></i> Danger Zone</div>
@@ -196,7 +199,9 @@
       document.getElementById('profileEmail').textContent = user.email;
       document.getElementById('editFirst').value = user.firstName || '';
       document.getElementById('editLast').value = user.lastName || '';
-      document.getElementById('editEmail').value = user.email || '';
+      const emailInput = document.getElementById('editEmail');
+      emailInput.value = user.email || '';
+      emailInput.readOnly = true;
       document.getElementById('editPhone').value = user.phone || '';
       document.getElementById('editCurrency').value = user.currency || 'INR';
       document.getElementById('memberSince').value = user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-IN',{month:'long',year:'numeric'}) : '';
@@ -245,7 +250,6 @@
     const updates = {
       firstName: document.getElementById('editFirst').value.trim(),
       lastName: document.getElementById('editLast').value.trim(),
-      email: document.getElementById('editEmail').value.trim(),
       phone: document.getElementById('editPhone').value.trim(),
       currency: document.getElementById('editCurrency').value,
     };
@@ -260,25 +264,36 @@
     }
   }
 
-  async function changePassword() {
+  async function changePassword(event) {
+    event.preventDefault();
     const cur = document.getElementById('curPass').value;
     const np = document.getElementById('newPass').value;
     const cp = document.getElementById('confPass').value;
+    hideAlert('passAlert');
+    hideAlert('passError');
     if (!cur || !np || !cp) { showErr('All fields required.'); return; }
     if (np !== cp) { showErr('Passwords do not match.'); return; }
     if (np.length < 6) { showErr('Min. 6 characters.'); return; }
+    if (cur === np) { showErr('Your new password must be different from your current password.'); return; }
+    const button = document.getElementById('changePasswordBtn');
+    button.disabled = true;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Changing...';
     try {
+      // The API identifies the account from the signed-in user's JWT; no email is
+      // accepted from the browser, so one user cannot change another user's password.
       await Auth.changePassword({ currentPassword: cur, newPassword: np });
       showAlert('passAlert');
-      document.getElementById('curPass').value = '';
-      document.getElementById('newPass').value = '';
-      document.getElementById('confPass').value = '';
+      document.getElementById('changePasswordForm').reset();
     } catch (error) {
       showErr(error.message || 'Error changing password.');
+    } finally {
+      button.disabled = false;
+      button.innerHTML = '<i class="fas fa-key"></i> Change Password';
     }
   }
 
   function showAlert(id) { const el = document.getElementById(id); el.classList.add('show'); setTimeout(() => el.classList.remove('show'), 3000); }
+  function hideAlert(id) { document.getElementById(id).classList.remove('show'); }
   function showErr(msg) { document.getElementById('passErrText').textContent = msg; const el = document.getElementById('passError'); el.classList.add('show'); setTimeout(() => el.classList.remove('show'), 3000); }
   function toggleEye(id,icon) { const inp = document.getElementById(id); inp.type = inp.type==='password'?'text':'password'; icon.classList.toggle('fa-eye'); icon.classList.toggle('fa-eye-slash'); }
   function clearData() { if(!confirm('Delete ALL data?')) return; localStorage.removeItem('transactions'); localStorage.removeItem('goals'); localStorage.removeItem('budgets'); loadStats(); loadActivity(); alert('Data cleared!'); }

@@ -3,7 +3,9 @@
    ALL data goes to MongoDB — no localStorage for user data
    ============================================ */
 
-const API_BASE = 'http://localhost:5000/api';
+const API_BASE = ['localhost', '127.0.0.1'].includes(window.location.hostname)
+  ? 'http://localhost:5000/api'
+  : `${window.location.origin}/api`;
 
 function getToken() { return localStorage.getItem('token'); }
 function getUser()  { return JSON.parse(localStorage.getItem('user') || 'null'); }

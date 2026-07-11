@@ -166,7 +166,7 @@
 <script src="../js/theme.js"></script>
 <script src="../js/api.js"></script>
 <script>
-  const API = 'http://localhost:5000/api';
+  const API = ['localhost', '127.0.0.1'].includes(window.location.hostname) ? 'http://localhost:5000/api' : `${window.location.origin}/api`;
   const incomeCategories = [
     'Salary','Freelancing','Business','Pocket Money','Interest','Gifts',
     'Refunds','Investments','YouTube Earnings','Rental Income','Others'
