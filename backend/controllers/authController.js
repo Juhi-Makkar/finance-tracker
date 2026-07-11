@@ -19,18 +19,16 @@ const getMailTransporter = () => {
   if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS)
     throw new Error('Email service is not configured');
 
-  const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 465,
-  secure: true,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  }
-});
-
-await transporter.verify();
-return transporter;
+  return nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+    tls: {
+      rejectUnauthorized: false  // Fix for certificate validation errors
+    }
+  });
 };
 
 // Send email verification email
@@ -41,6 +39,9 @@ const sendVerificationEmail = async (email, verificationToken, firstName) => {
   const backendBase = (process.env.BACKEND_URL || 'http://localhost:5000').replace(/\/$/, '');
   const frontendBase = (process.env.FRONTEND_URL || `${backendBase}/pages`).replace(/\/$/, '');
   const verificationLink = `${frontendBase}/verify-email.html?token=${encodeURIComponent(verificationToken)}`;
+
+  console.log("EMAIL_USER =", process.env.EMAIL_USER);
+  console.log("Sending email to:", email);
 
   await transporter.sendMail({
     from: process.env.EMAIL_USER,
