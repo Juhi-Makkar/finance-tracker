@@ -1,9 +1,9 @@
 // API Base URL
 // Public pages served through the backend use the same HTTPS origin. Local
-// development still uses the backend's port 5000.
+// API Base URL
 const API_BASE_URL = ['localhost', '127.0.0.1'].includes(window.location.hostname)
   ? 'http://localhost:5000/api/auth'
-  : `${window.location.origin}/api/auth`;
+  : 'https://finance-tracker-3l07.onrender.com/api/auth';
 
 // =====================
 // SIGNUP FUNCTIONALITY

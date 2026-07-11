@@ -5,7 +5,7 @@
 
 const API_BASE = ['localhost', '127.0.0.1'].includes(window.location.hostname)
   ? 'http://localhost:5000/api'
-  : 'https://finance-tracker-3l07.onrender.com/api'; 
+  : 'https://finance-tracker-3l07.onrender.com/api';
 
 function getToken() { return localStorage.getItem('token'); }
 function getUser()  { return JSON.parse(localStorage.getItem('user') || 'null'); }
