@@ -156,7 +156,7 @@
 <script src="../js/theme.js"></script>
 <script src="../js/api.js"></script>
 <script>
-  const API = ['localhost', '127.0.0.1'].includes(window.location.hostname) ? 'http://localhost:5000/api' : `${window.location.origin}/api`;
+  const API = ['localhost', '127.0.0.1'].includes(window.location.hostname) ? 'http://localhost:5000/api' : 'https://finance-tracker-3l07.onrender.com/api';
   const expenseCategories = [
     'Rent','Electricity','Water','Internet','Grocery','Restaurant','Snacks',
     'Bike Petrol','Bike Servicing','Public Transport','Travel','Shopping',
@@ -180,11 +180,17 @@
   });
 
   async function initExpensesPage() {
-    checkAuth();
-    setDefaultDate();
-    populateCategoryOptions();
+  checkAuth();
+  setDefaultDate();
+  populateCategoryOptions();
+
+  try {
     await fetchExpenses();
+  } catch (err) {
+    console.error(err);
+    alert("Failed to load expenses.");
   }
+}
 
   function checkAuth() {
     const token = localStorage.getItem('token');
@@ -233,10 +239,26 @@
   }
 
   async function fetchExpenses() {
-    const data = await apiRequest('/transactions?type=expense&limit=1000');
-    transactions = Array.isArray(data) ? data : [];
-    render();
-  }
+
+  document.getElementById("txList").innerHTML =
+    "<p style='text-align:center;color:#94a3b8;padding:20px;'>Loading...</p>";
+
+  const data = await apiRequest('/transactions?limit=1000');
+
+  console.log(data);
+
+  const allTransactions = Array.isArray(data)
+    ? data
+    : (data.transactions || []);
+
+  transactions = allTransactions.filter(
+    t => t.type?.toLowerCase() === "expense"
+  );
+
+  console.log(transactions);
+
+  render();
+}
 
   function setDefaultDate() {
     document.getElementById('eDate').value = new Date().toISOString().split('T')[0];
@@ -269,9 +291,13 @@
     document.getElementById('avgExp').textContent = formatCurrency(Math.round(total / days));
 
     const categories = {};
-    exp.forEach(tx => {
-      categories[tx.category] = (categories[tx.category] || 0) + Number(tx.amount || 0);
-    });
+
+exp.forEach(tx => {
+  const category = tx.category?.trim() || "Miscellaneous";
+
+  categories[category] =
+    (categories[category] || 0) + Number(tx.amount || 0);
+});
 
     document.getElementById('catGrid').innerHTML = Object.entries(categories)
       .sort((a, b) => b[1] - a[1])
@@ -295,7 +321,7 @@
               <div class="tx-date">${new Date(tx.date).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' })}${tx.description ? ' · ' + tx.description : ''}</div>
             </div>
             <div class="tx-amount">-${formatCurrency(tx.amount)}</div>
-            <button class="btn-del" onclick="delExpense('${tx._id || tx.id}')"><i class="fas fa-trash"></i></button>
+            <button class="btn-del" onclick="delExpense('${tx._id}')"><i class="fas fa-trash"></i></button>
           </div>
         `).join('')
       : '<div class="empty"><i class="fas fa-receipt"></i><p>No expenses recorded yet</p></div>';
