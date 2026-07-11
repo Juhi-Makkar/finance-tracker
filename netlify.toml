@@ -1,0 +1,90 @@
+[build]
+  publish = "frontend"
+
+# Root goes to index page
+[[redirects]]
+  from = "/"
+  to = "/pages/index.html"
+  status = 200
+
+# Direct page access without .html
+[[redirects]]
+  from = "/login"
+  to = "/pages/login.html"
+  status = 200
+
+[[redirects]]
+  from = "/signup"
+  to = "/pages/signup.html"
+  status = 200
+
+[[redirects]]
+  from = "/dashboard"
+  to = "/pages/dashboard.html"
+  status = 200
+
+[[redirects]]
+  from = "/transactions"
+  to = "/pages/transactions.html"
+  status = 200
+
+[[redirects]]
+  from = "/income"
+  to = "/pages/income.html"
+  status = 200
+
+[[redirects]]
+  from = "/expenses"
+  to = "/pages/expenses.html"
+  status = 200
+
+[[redirects]]
+  from = "/budget"
+  to = "/pages/budget.html"
+  status = 200
+
+[[redirects]]
+  from = "/goals"
+  to = "/pages/goals.html"
+  status = 200
+
+[[redirects]]
+  from = "/calendar"
+  to = "/pages/calendar.html"
+  status = 200
+
+[[redirects]]
+  from = "/reports"
+  to = "/pages/reports.html"
+  status = 200
+
+[[redirects]]
+  from = "/profile"
+  to = "/pages/profile.html"
+  status = 200
+
+[[redirects]]
+  from = "/settings"
+  to = "/pages/settings.html"
+  status = 200
+
+[[redirects]]
+  from = "/appearance"
+  to = "/pages/appearance.html"
+  status = 200
+
+[[redirects]]
+  from = "/recurring"
+  to = "/pages/recurring.html"
+  status = 200
+
+[[redirects]]
+  from = "/admin"
+  to = "/pages/admin.html"
+  status = 200
+
+# Fallback — serve 404 page
+[[redirects]]
+  from = "/*"
+  to = "/pages/index.html"
+  status = 200
