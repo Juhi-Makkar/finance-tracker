@@ -833,6 +833,7 @@ console.log("Expense:", expenseData);
 const ctx = canvas.getContext("2d");
 
 barChartInstance = new Chart(ctx, {
+  
       type: 'bar',
       data: {
         labels,
@@ -851,6 +852,8 @@ barChartInstance = new Chart(ctx, {
         }
       }
     });
+
+    console.log(barChartInstance);
 
     const catData = {};
     transactions
