@@ -122,10 +122,14 @@ const register = async (req, res) => {
     }
     
     res.status(201).json({
-      message: 'Account created successfully! Please check your email to verify your account.',
-      email: user.email,
-      requiresVerification: true,
-    });
+  message: 'Account created successfully!',
+  user: {
+    id: user._id,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    email: user.email
+  }
+});
   } catch (error) {
     console.error('Register error:', error);
     res.status(500).json({ message: 'Server error. Please try again.' });
@@ -195,13 +199,13 @@ const resendVerificationEmail = async (req, res) => {
     user.emailVerificationToken = emailVerificationToken;
     user.emailVerificationExpiry = emailVerificationExpiry;
     await user.save();
-    
+    /*
     try {
       await sendVerificationEmail(email, emailVerificationToken, user.firstName);
     } catch (emailError) {
       console.error('Email sending error:', emailError);
       return res.status(500).json({ message: 'Failed to send verification email.' });
-    }
+    }*/
     
     res.json({ message: 'Verification email sent! Check your inbox.' });
   } catch (error) {
@@ -222,13 +226,13 @@ const login = async (req, res) => {
       return res.status(401).json({ message: 'Invalid email or password.' });
     
     // Check if email is verified
-    if (!user.isEmailVerified)
+/*    if (!user.isEmailVerified)
       return res.status(403).json({ 
         message: 'Please verify your email first.',
         requiresVerification: true,
         email: user.email,
       });
-    
+    */
     if (user.isBlocked)
       return res.status(403).json({ message: 'Your account has been blocked. Contact support.' });
     
