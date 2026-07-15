@@ -1,7 +1,6 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
-const crypto = require('crypto');
 
 // Generate JWT token
 const generateToken = (id) => jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '30d' });
@@ -10,9 +9,6 @@ const generateToken = (id) => jwt.sign({ id }, process.env.JWT_SECRET, { expires
 const otpStore = {};
 
 const generateOtp = () => Math.floor(100000 + Math.random() * 900000).toString();
-
-// Generate email verification token
-const generateVerificationToken = () => crypto.randomBytes(32).toString('hex');
 
 // Nodemailer transporter setup
 const getMailTransporter = () => {
@@ -33,38 +29,6 @@ const getMailTransporter = () => {
     socketTimeout: 10000,
   });
 };
-// Send email verification email
-const sendVerificationEmail = async (email, verificationToken, firstName) => {
-  const transporter = getMailTransporter();
-  // This must be a live public URL in production. Keeping it explicit avoids
-  // accidentally sending links to a stale ngrok tunnel.
-  const backendBase = (process.env.BACKEND_URL || 'http://localhost:5000').replace(/\/$/, '');
-  const frontendBase = (process.env.FRONTEND_URL || `${backendBase}/pages`).replace(/\/$/, '');
-  const verificationLink = `${frontendBase}/verify-email.html?token=${encodeURIComponent(verificationToken)}`;
-
-  console.log("EMAIL_USER =", process.env.EMAIL_USER);
-  console.log("Sending email to:", email);
-
-  await transporter.sendMail({
-    from: process.env.EMAIL_USER,
-    to: email,
-    subject: 'FinTrack Email Verification',
-    html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2 style="color: #6366f1;">Welcome to FinTrack, ${firstName}!</h2>
-        <p>Please verify your email to activate your account and start tracking your finances.</p>
-        <a href="${verificationLink}" style="background-color: #6366f1; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 20px 0;">
-          Verify Email Address
-        </a>
-        <p style="color: #666; margin-top: 30px;">Or copy this link: <br/><code>${verificationLink}</code></p>
-        <p style="color: #999; font-size: 12px;">This link expires in 24 hours.</p>
-        <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
-        <p style="color: #999; font-size: 12px;">© 2025 FinTrack. All rights reserved.</p>
-      </div>
-    `,
-  });
-};
-
 const sendPasswordResetEmail = async (email, otp) => {
   const transporter = getMailTransporter();
 
@@ -97,10 +61,6 @@ const register = async (req, res) => {
     if (userExists)
       return res.status(400).json({ message: 'Email already registered. Please login.' });
     
-    // Generate verification token
-    const emailVerificationToken = generateVerificationToken();
-    const emailVerificationExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
-    
     const user = await User.create({
       firstName,
       lastName,
@@ -108,18 +68,7 @@ const register = async (req, res) => {
       phone,
       password,
       currency,
-      emailVerificationToken,
-      emailVerificationExpiry,
-      isEmailVerified: false,
     });
-    
-    // Send verification email
-    try {
-      await sendVerificationEmail(email, emailVerificationToken, firstName);
-    } catch (emailError) {
-      console.error('Email sending error:', emailError);
-      return res.status(500).json({ message: 'Failed to send verification email. Check email configuration.' });
-    }
     
     res.status(201).json({
   message: 'Account created successfully!',
@@ -136,84 +85,6 @@ const register = async (req, res) => {
   }
 };
 
-// @route POST /api/auth/verify-email
-const verifyEmail = async (req, res) => {
-  try {
-    const token = req.method === 'GET' ? req.query.token : req.body.token;
-    
-    if (!token)
-      return req.method === 'GET'
-        ? res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/verify-email.html?status=failed`)
-        : res.status(400).json({ message: 'Verification token is required.' });
-    
-    const user = await User.findOne({
-      emailVerificationToken: token,
-      emailVerificationExpiry: { $gt: Date.now() },
-    });
-    
-    if (!user) {
-      return req.method === 'GET'
-        ? res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/verify-email.html?status=failed`)
-        : res.status(400).json({ message: 'Invalid or expired verification token.' });
-    }
-
-    user.isEmailVerified = true;
-    user.emailVerificationToken = null;
-    user.emailVerificationExpiry = null;
-    await user.save();
-
-    if (req.method === 'GET') {
-      return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/login.html?verified=true`);
-    }
-
-    res.json({
-      message: 'Email verified successfully! You can now login.',
-      isEmailVerified: true,
-    });
-  } catch (error) {
-    console.error('Email verification error:', error);
-    res.status(500).json({ message: 'Server error. Please try again.' });
-  }
-};
-
-// @route POST /api/auth/resend-verification
-const resendVerificationEmail = async (req, res) => {
-  try {
-    const { email } = req.body;
-    
-    if (!email)
-      return res.status(400).json({ message: 'Email is required.' });
-    
-    const user = await User.findOne({ email });
-    
-    if (!user)
-      return res.status(404).json({ message: 'No account found with this email.' });
-    
-    if (user.isEmailVerified)
-      return res.status(400).json({ message: 'Email is already verified.' });
-    
-    // Generate new verification token
-    const emailVerificationToken = generateVerificationToken();
-    const emailVerificationExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000);
-    
-    user.emailVerificationToken = emailVerificationToken;
-    user.emailVerificationExpiry = emailVerificationExpiry;
-    await user.save();
-    /*
-    try {
-      await sendVerificationEmail(email, emailVerificationToken, user.firstName);
-    } catch (emailError) {
-      console.error('Email sending error:', emailError);
-      return res.status(500).json({ message: 'Failed to send verification email.' });
-    }*/
-    
-    res.json({ message: 'Verification email sent! Check your inbox.' });
-  } catch (error) {
-    console.error('Resend verification error:', error);
-    res.status(500).json({ message: 'Server error. Please try again.' });
-  }
-};
-
 // @route POST /api/auth/login
 const login = async (req, res) => {
   try {
@@ -225,14 +96,6 @@ const login = async (req, res) => {
     if (!user)
       return res.status(401).json({ message: 'Invalid email or password.' });
     
-    // Check if email is verified
-/*    if (!user.isEmailVerified)
-      return res.status(403).json({ 
-        message: 'Please verify your email first.',
-        requiresVerification: true,
-        email: user.email,
-      });
-    */
     if (user.isBlocked)
       return res.status(403).json({ message: 'Your account has been blocked. Contact support.' });
     
@@ -255,7 +118,6 @@ const login = async (req, res) => {
         currency: user.currency,
         theme: user.theme,
         isAdmin: user.isAdmin,
-        isEmailVerified: user.isEmailVerified,
       }
     });
   } catch (error) {
@@ -410,4 +272,4 @@ const resetPassword = async (req, res) => {
   }
 };
 
-module.exports = { register, login, getMe, updateMe, changePassword, verifyEmail, resendVerificationEmail, forgotPassword, verifyOtp, resetPassword };
+module.exports = { register, login, getMe, updateMe, changePassword, forgotPassword, verifyOtp, resetPassword };

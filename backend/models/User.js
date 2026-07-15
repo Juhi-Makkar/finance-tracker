@@ -15,9 +15,6 @@ const userSchema = new mongoose.Schema({
   reminderTime:               { type: String, default: '20:00' },
   isAdmin:                    { type: Boolean, default: false },
   isBlocked:                  { type: Boolean, default: false },
-  isEmailVerified:            { type: Boolean, default: false },
-  emailVerificationToken:     { type: String, default: null },
-  emailVerificationExpiry:    { type: Date, default: null },
   lastLogin:                  { type: Date, default: null },
 }, { timestamps: true });
 

@@ -55,8 +55,7 @@ async function handleSignup(event) {
     if (res.ok) {
       showSuccess('✓ Account created! Please check your email to verify your account.');
       setTimeout(() => {
-        // Redirect to verification waiting page
-        window.location.href = `verify-email.html?email=${encodeURIComponent(email)}`;
+        window.location.href = 'login.html';
       }, 2000);
     } else {
       showError(data.message || 'Registration failed. Please try again.');
@@ -104,90 +103,13 @@ async function handleLogin(event) {
         window.location.href = 'dashboard.html';
       }, 1500);
     } else {
-      if (res.status === 403 && data.requiresVerification) {
-        showError('Please verify your email first.');
-        setTimeout(() => {
-          window.location.href = `verify-email.html?email=${encodeURIComponent(email)}`;
-        }, 2000);
-      } else {
-        showError(data.message || 'Login failed. Please try again.');
-      }
+      showError(data.message || 'Login failed. Please try again.');
     }
   } catch (err) {
     console.error('Login error:', err);
     showError('Cannot connect to server. Make sure the backend is running.');
   } finally {
     setLoading(false, 'loginBtn');
-  }
-}
-
-// =====================
-// EMAIL VERIFICATION
-// =====================
-
-async function handleVerifyEmail(token) {
-  setLoading(true, 'verifyBtn');
-  try {
-    const res = await fetch(`${API_BASE_URL}/verify-email`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token })
-    });
-
-    const data = await res.json();
-
-    if (res.ok) {
-      const statusIcon = document.getElementById('statusIcon');
-      if (statusIcon) {
-        statusIcon.classList.remove('pending');
-        statusIcon.classList.add('success');
-        statusIcon.innerHTML = '<i class="fas fa-check"></i>';
-      }
-      const title = document.getElementById('title');
-      const subtitle = document.getElementById('subtitle');
-      if (title) title.textContent = 'Email Verified!';
-      if (subtitle) subtitle.textContent = 'Your account is ready. Taking you to the login page...';
-      showSuccess('✓ Email verified successfully! Redirecting to login...');
-      setTimeout(() => {
-        window.location.href = 'login.html';
-      }, 2000);
-    } else {
-      showError(data.message || 'Email verification failed. The link may have expired.');
-    }
-  } catch (err) {
-    console.error('Verification error:', err);
-    showError('Cannot connect to server. Please try again later.');
-  } finally {
-    setLoading(false, 'verifyBtn');
-  }
-}
-
-async function handleResendVerification(email) {
-  if (!email) {
-    showError('Email is required.');
-    return;
-  }
-
-  setLoading(true, 'resendBtn');
-  try {
-    const res = await fetch(`${API_BASE_URL}/resend-verification`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email })
-    });
-
-    const data = await res.json();
-
-    if (res.ok) {
-      showSuccess('✓ Verification email sent! Check your inbox.');
-    } else {
-      showError(data.message || 'Failed to resend verification email.');
-    }
-  } catch (err) {
-    console.error('Resend error:', err);
-    showError('Cannot connect to server. Please try again later.');
-  } finally {
-    setLoading(false, 'resendBtn');
   }
 }
 

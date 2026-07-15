@@ -180,14 +180,7 @@
             }
           }, 1500);
         } else {
-          if (res.status === 403 && data.requiresVerification) {
-            showError('Please verify your email first.');
-            setTimeout(() => {
-              window.location.href = `verify-email.html?email=${encodeURIComponent(email)}`;
-            }, 2000);
-          } else {
-            showError(data.message || 'Invalid email or password.');
-          }
+          showError(data.message || 'Invalid email or password.');
         }
       } catch (err) {
         console.error('Login error:', err);
