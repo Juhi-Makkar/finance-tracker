@@ -7,6 +7,11 @@ const transactionSchema = new mongoose.Schema({
   date: { type: Date, required: true },
   category: { type: String, required: true },
   description: { type: String, default: '' },
+  paymentMethod: {
+    type: String,
+    enum: ['UPI', 'Cash', 'Bank Transfer', 'Debit Card', 'Credit Card', 'Other', null],
+    default: null,
+  },
   isRecurring: { type: Boolean, default: false },
   recurringId: { type: mongoose.Schema.Types.ObjectId, ref: 'RecurringTransaction', default: null },
 }, { timestamps: true });

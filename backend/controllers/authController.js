@@ -68,6 +68,7 @@ const register = async (req, res) => {
       phone,
       password,
       currency,
+      dashboardPeriod: 'monthly',
     });
     
     res.status(201).json({
@@ -116,6 +117,7 @@ const login = async (req, res) => {
         lastName: user.lastName,
         email: user.email,
         currency: user.currency,
+        dashboardPeriod: user.dashboardPeriod || 'monthly',
         theme: user.theme,
         isAdmin: user.isAdmin,
       }
@@ -139,7 +141,7 @@ const getMe = async (req, res) => {
 // @route PUT /api/auth/me
 const updateMe = async (req, res) => {
   try {
-    const { firstName, lastName, email, phone, currency } = req.body;
+    const { firstName, lastName, email, phone, currency, dashboardPeriod } = req.body;
     const user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ message: 'User not found.' });
     if (email && email !== user.email) {
@@ -151,6 +153,13 @@ const updateMe = async (req, res) => {
     user.email = email ?? user.email;
     user.phone = phone ?? user.phone;
     user.currency = currency ?? user.currency;
+    if (dashboardPeriod !== undefined) {
+      const validPeriods = ['monthly', 'quarterly', 'half-yearly', 'yearly'];
+      if (!validPeriods.includes(dashboardPeriod)) {
+        return res.status(400).json({ message: 'Invalid dashboard period.' });
+      }
+      user.dashboardPeriod = dashboardPeriod;
+    }
     await user.save();
     res.json({
       message: 'Profile updated successfully!',
@@ -161,6 +170,7 @@ const updateMe = async (req, res) => {
         email: user.email,
         phone: user.phone,
         currency: user.currency,
+        dashboardPeriod: user.dashboardPeriod || 'monthly',
         theme: user.theme,
         isAdmin: user.isAdmin,
       },

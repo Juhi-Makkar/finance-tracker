@@ -13,6 +13,8 @@ const userSchema = new mongoose.Schema({
   darkMode:                   { type: Boolean, default: true },
   notifications:             { type: Boolean, default: true },
   reminderTime:               { type: String, default: '20:00' },
+  // Kept optional so existing users continue to work without a data migration.
+  dashboardPeriod:            { type: String, enum: ['monthly', 'quarterly', 'half-yearly', 'yearly'] },
   isAdmin:                    { type: Boolean, default: false },
   isBlocked:                  { type: Boolean, default: false },
   lastLogin:                  { type: Date, default: null },

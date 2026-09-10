@@ -270,7 +270,7 @@
               <th>Transaction</th>
               <th>Category</th>
               <th>Date</th>
-              <th>Type</th>
+              <th>Payment Method</th>
               <th>Amount</th>
               <th></th>
             </tr>
@@ -320,7 +320,17 @@
       </div>
       <div class="form-group">
         <label>Category</label>
-        <select id="txCategory" required></select>
+        <select id="txCategory" required onchange="toggleCustomCategoryInput()"></select>
+      </div>
+      <div class="form-group" id="customCategoryGroup" style="display:none">
+        <label>Custom Category</label>
+        <input type="text" id="txCustomCategory" placeholder="Enter category name" />
+      </div>
+      <div class="form-group">
+        <label>Payment Method <span style="color:var(--muted);font-weight:400">(optional)</span></label>
+        <select id="txPaymentMethod">
+          <option value="">Not specified</option><option>UPI</option><option>Cash</option><option>Bank Transfer</option><option>Debit Card</option><option>Credit Card</option><option>Other</option>
+        </select>
       </div>
       <div class="form-group">
         <label>Description / Notes</label>
@@ -334,11 +344,11 @@
 </div>
 
 <script src="../js/theme.js"></script>
+<script src="../js/categories.js"></script>
 <script src="../js/api.js"></script>
 
 <script>
-  const incomeCategories = ['Salary','Freelancing','Business','Pocket Money','Interest','Gifts','Refunds','Investments','YouTube Earnings','Rental Income','Others'];
-  const expenseCategories = ['Rent','Electricity','Water','Internet','Grocery','Restaurant','Snacks','Bike Petrol','Bike Servicing','Public Transport','Travel','Shopping','Clothing','Beauty','Entertainment','YouTube Expenses','Netflix','Spotify','Subscriptions','Medicines','Gym','Doctor','Books','Courses','Miscellaneous'];
+  const { income: incomeCategories, expense: expenseCategories } = FinTrackCategories;
 
   let transactions = [];
   let filtered = [];
@@ -448,7 +458,7 @@
         </td>
         <td style="color:var(--muted);font-size:13px">${t.category}</td>
         <td style="color:var(--muted);font-size:13px">${new Date(t.date).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}</td>
-        <td><span class="badge badge-${t.type}">${t.type==='income'?'Income':'Expense'}</span></td>
+        <td style="color:var(--muted);font-size:13px">${t.paymentMethod || 'Not specified'}</td>
         <td class="amount-cell" style="color:${t.type==='income'?'#22c55e':'#ef4444'}">${t.type==='income'?'+':'-'}${formatCurrency(t.amount)}</td>
         <td><button class="btn-delete" onclick="deleteTransaction(${t.id})" title="Delete"><i class="fas fa-trash"></i></button></td>
       </tr>`).join('');
@@ -503,16 +513,30 @@
   function populateCategories() {
     const cats = currentTab==='income' ? incomeCategories : expenseCategories;
     document.getElementById('txCategory').innerHTML = cats.map(c=>`<option>${c}</option>`).join('');
+    toggleCustomCategoryInput();
+  }
+
+  function toggleCustomCategoryInput() {
+    const isOther = document.getElementById('txCategory').value === 'Other';
+    document.getElementById('customCategoryGroup').style.display = isOther ? 'block' : 'none';
   }
 
   async function submitTransaction(e) {
     e.preventDefault();
+    const selectedCategory = document.getElementById('txCategory').value;
+    const customCategory = document.getElementById('txCustomCategory').value.trim();
+    const category = selectedCategory === 'Other' ? customCategory : selectedCategory;
+    if (!category) {
+      alert('Please enter a custom category.');
+      return;
+    }
     const payload = {
       type: currentTab,
       amount: parseFloat(document.getElementById('txAmount').value),
       date: document.getElementById('txDate').value,
-      category: document.getElementById('txCategory').value,
+      category,
       description: document.getElementById('txDesc').value,
+      paymentMethod: document.getElementById('txPaymentMethod').value || null,
     };
     try {
       const tx = await Transactions.add(payload);
@@ -523,6 +547,7 @@
       closeModal();
       document.getElementById('txForm').reset();
       setTodayDate();
+      populateCategories();
       // Notify budget page to refresh
       if (currentTab === 'expense') {
         localStorage.setItem('budgetRefresh', Date.now().toString());

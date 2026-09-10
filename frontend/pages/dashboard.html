@@ -95,6 +95,25 @@
     .topbar-left h1 { font-size: 20px; font-weight: 700; }
     .topbar-left p { font-size: 13px; color: var(--muted); margin-top: 2px; }
     .topbar-right { display: flex; align-items: center; gap: 12px; }
+    .period-selector {
+      min-width: 142px;
+      color-scheme: dark;
+      background: var(--input-bg, var(--card));
+      color: var(--text);
+      border: 1px solid var(--accent);
+      border-radius: 12px;
+      padding: 11px 14px;
+      font: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      outline: none;
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 16%, transparent);
+    }
+    .period-selector:hover,
+    .period-selector:focus { border-color: var(--accent2); }
+    .period-selector option { background: var(--bg2); color: var(--text); }
+    body.theme-beige .period-selector { color-scheme: light; }
     .icon-btn {
       width: 38px; height: 38px; border-radius: 10px;
       border: 1px solid var(--border); background: var(--card);
@@ -323,11 +342,12 @@
       </div>
     </div>
     <div class="topbar-right">
-      <button class="icon-btn" title="Search"><i class="fas fa-magnifying-glass"></i></button>
-      <button class="icon-btn" title="Notifications">
-        <i class="fas fa-bell"></i>
-        <div class="notif-dot"></div>
-      </button>
+      <select id="dashboardPeriod" class="period-selector" aria-label="Financial period" onchange="changeDashboardPeriod(this.value)">
+        <option value="monthly">Monthly</option>
+        <option value="quarterly">Quarterly</option>
+        <option value="half-yearly">Half-Yearly</option>
+        <option value="yearly">Yearly</option>
+      </select>
       <button class="btn-add" onclick="openModal()">
         <i class="fas fa-plus"></i> Add Transaction
       </button>
@@ -342,15 +362,13 @@
       <div class="stat-card">
         <div class="stat-top">
           <div class="stat-icon" style="background:rgba(99,102,241,0.15);color:#6366f1"><i class="fas fa-wallet"></i></div>
-          <span class="stat-change up"><i class="fas fa-arrow-up"></i> 12%</span>
         </div>
         <div class="stat-value" id="statBalance">₹0</div>
-        <div class="stat-label">Current Balance</div>
+        <div class="stat-label">Remaining Balance</div>
       </div>
       <div class="stat-card">
         <div class="stat-top">
           <div class="stat-icon" style="background:rgba(34,197,94,0.15);color:#22c55e"><i class="fas fa-arrow-trend-up"></i></div>
-          <span class="stat-change up"><i class="fas fa-arrow-up"></i> 8%</span>
         </div>
         <div class="stat-value" style="color:var(--green)" id="statIncome">₹0</div>
         <div class="stat-label">Total Income</div>
@@ -358,18 +376,16 @@
       <div class="stat-card">
         <div class="stat-top">
           <div class="stat-icon" style="background:rgba(239,68,68,0.15);color:#ef4444"><i class="fas fa-arrow-trend-down"></i></div>
-          <span class="stat-change down"><i class="fas fa-arrow-up"></i> 3%</span>
         </div>
         <div class="stat-value" style="color:var(--red)" id="statExpense">₹0</div>
         <div class="stat-label">Total Expenses</div>
       </div>
       <div class="stat-card">
         <div class="stat-top">
-          <div class="stat-icon" style="background:rgba(251,191,36,0.15);color:#fbbf24"><i class="fas fa-piggy-bank"></i></div>
-          <span class="stat-change up"><i class="fas fa-arrow-up"></i> 5%</span>
+          <div class="stat-icon" style="background:rgba(251,191,36,0.15);color:#fbbf24"><i class="fas fa-percent"></i></div>
         </div>
         <div class="stat-value" style="color:var(--yellow)" id="statSavings">₹0</div>
-        <div class="stat-label">Monthly Savings</div>
+        <div class="stat-label">Expense Ratio</div>
       </div>
     </div>
 
@@ -378,10 +394,6 @@
       <div class="card">
         <div class="card-header">
           <span class="card-title">Income vs Expenses</span>
-          <select style="background:var(--card);border:1px solid var(--border);color:var(--muted);padding:5px 10px;border-radius:8px;font-size:12px;outline:none">
-            <option>Last 6 Months</option>
-            <option>Last 12 Months</option>
-          </select>
         </div>
         <div class="chart-wrap"><canvas id="barChart"></canvas></div>
       </div>
@@ -550,6 +562,12 @@
         <label>Category</label>
         <select id="txCategory" required onchange="toggleCustomCategoryInput()"></select>
       </div>
+      <div class="form-group">
+        <label>Payment Method <span style="color:var(--muted);font-weight:400">(optional)</span></label>
+        <select id="txPaymentMethod">
+          <option value="">Not specified</option><option>UPI</option><option>Cash</option><option>Bank Transfer</option><option>Debit Card</option><option>Credit Card</option><option>Other</option>
+        </select>
+      </div>
       <div class="form-group" id="customCategoryGroup" style="display:none;">
         <label>Custom Category</label>
         <input type="text" id="txCustomCategory" placeholder="Enter category name" />
@@ -566,6 +584,7 @@
 </div>
 
 <script src="../js/theme.js"></script>
+<script src="../js/categories.js"></script>
 <script src="../js/api.js"></script>
 
 <script>
@@ -574,13 +593,14 @@
   let transactions = [];
   let budgets = [];
   let goals = [];
+  let dashboardAnalytics = null;
 
-  const incomeCategories = ['Salary','Freelancing','Business','Pocket Money','Interest','Gifts','Refunds','Investments','YouTube Earnings','Rental Income','Other'];
-  const expenseCategories = ['Rent','Electricity','Water','Internet','Food','Grocery','Restaurant','Snacks','Bike Petrol','Bike Servicing','Public Transport','Travel','Shopping','Clothing','Beauty','Entertainment','YouTube Expenses','Netflix','Spotify','Subscriptions','Medicines','Gym','Doctor','Books','Courses','Loan','Other'];
+  const { income: incomeCategories, expense: expenseCategories } = FinTrackCategories;
 
   document.addEventListener('DOMContentLoaded', async () => {
     checkAuth();
     setTodayDate();
+    document.getElementById('dashboardPeriod').value = getDashboardPeriod();
     await loadDashboardData();
     document.getElementById('topbarDate').textContent =
       new Date().toLocaleDateString('en-IN', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
@@ -615,13 +635,14 @@
 
   async function loadDashboardData() {
     try {
-      const [txData, budgetData, goalData] = await Promise.all([
-        apiRequest('/transactions?limit=1000'),
+      const [analyticsData, budgetData, goalData] = await Promise.all([
+        apiRequest(`/transactions/dashboard?period=${encodeURIComponent(getDashboardPeriod())}`),
         apiRequest('/budgets'),
         apiRequest('/goals')
       ]);
 
-      transactions = Array.isArray(txData) ? txData : [];
+      dashboardAnalytics = analyticsData;
+      transactions = analyticsData?.recentTransactions || [];
       budgets = Array.isArray(budgetData) ? budgetData : [];
       goals = Array.isArray(goalData) ? goalData : [];
 
@@ -658,6 +679,33 @@
     window.location.href = 'login.html';
   }
 
+  function getDashboardPeriod() {
+    const user = JSON.parse(localStorage.getItem('user') || 'null');
+    const validPeriods = ['monthly', 'quarterly', 'half-yearly', 'yearly'];
+    return validPeriods.includes(user?.dashboardPeriod) ? user.dashboardPeriod : 'monthly';
+  }
+
+  async function changeDashboardPeriod(period) {
+    const selector = document.getElementById('dashboardPeriod');
+    const previousPeriod = getDashboardPeriod();
+    selector.disabled = true;
+
+    try {
+      const response = await apiRequest('/auth/me', {
+        method: 'PUT',
+        body: JSON.stringify({ dashboardPeriod: period })
+      });
+      const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+      localStorage.setItem('user', JSON.stringify({ ...storedUser, ...(response.user || {}), dashboardPeriod: period }));
+      await loadDashboardData();
+    } catch (err) {
+      selector.value = previousPeriod;
+      alert(err.message || 'Could not save dashboard period.');
+    } finally {
+      selector.disabled = false;
+    }
+  }
+
   function setTodayDate() {
     document.getElementById('txDate').value = new Date().toISOString().split('T')[0];
   }
@@ -669,34 +717,15 @@
     });
   }
 
-  function isSameMonth(date, ref) {
-    const d = new Date(date);
-    return d.getMonth() === ref.getMonth() && d.getFullYear() === ref.getFullYear();
-  }
-
   function updateStats() {
-    const income = transactions
-      .filter(t => t.type === 'income')
-      .reduce((sum, t) => sum + Number(t.amount || 0), 0);
-
-    const expense = transactions
-      .filter(t => t.type === 'expense')
-      .reduce((sum, t) => sum + Number(t.amount || 0), 0);
-
-    const now = new Date();
-
-    const monthlyIncome = transactions
-      .filter(t => t.type === 'income' && isSameMonth(t.date, now))
-      .reduce((sum, t) => sum + Number(t.amount || 0), 0);
-
-    const monthlyExpense = transactions
-      .filter(t => t.type === 'expense' && isSameMonth(t.date, now))
-      .reduce((sum, t) => sum + Number(t.amount || 0), 0);
-
-    document.getElementById('statBalance').textContent = formatCurrency(income - expense);
-    document.getElementById('statIncome').textContent = formatCurrency(income);
-    document.getElementById('statExpense').textContent = formatCurrency(expense);
-    document.getElementById('statSavings').textContent = formatCurrency(monthlyIncome - monthlyExpense);
+    const analytics = dashboardAnalytics || {};
+    const remainingBalance = (analytics.totalIncome || 0) - (analytics.totalExpenses || 0);
+    document.getElementById('statBalance').textContent = formatCurrency(remainingBalance);
+    document.getElementById('statIncome').textContent = formatCurrency(analytics.totalIncome || 0);
+    document.getElementById('statExpense').textContent = formatCurrency(analytics.totalExpenses || 0);
+    document.getElementById('statSavings').textContent = analytics.expenseRatio == null
+      ? '—'
+      : `${Number(analytics.expenseRatio).toLocaleString('en-IN', { maximumFractionDigits: 1 })}%`;
   }
 
   function renderTransactions() {
@@ -801,40 +830,15 @@
   let barChartInstance, pieChartInstance;
 
   function initCharts() {
-    const labels = [];
-    const incomeData = [];
-    const expenseData = [];
-
-    for (let i = 5; i >= 0; i--) {
-      const d = new Date();
-      d.setMonth(d.getMonth() - i);
-
-      labels.push(d.toLocaleDateString('en-IN', { month:'short' }));
-
-      incomeData.push(transactions
-        .filter(t => t.type === 'income' && isSameMonth(t.date, d))
-        .reduce((sum, t) => sum + Number(t.amount || 0), 0));
-
-      expenseData.push(transactions
-        .filter(t => t.type === 'expense' && isSameMonth(t.date, d))
-        .reduce((sum, t) => sum + Number(t.amount || 0), 0));
-    }
-
-    console.log("Labels:", labels);
-console.log("Income:", incomeData);
-console.log("Expense:", expenseData);
-
-
-
+    const trend = dashboardAnalytics?.trend || [];
+    const labels = trend.map(item => item.label);
+    const incomeData = trend.map(item => item.income);
+    const expenseData = trend.map(item => item.expenses);
     if (barChartInstance) barChartInstance.destroy();
-
-    console.log(document.getElementById("barChart"));
-
     const canvas = document.getElementById("barChart");
-const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext("2d");
 
-barChartInstance = new Chart(ctx, {
-  
+    barChartInstance = new Chart(ctx, {
       type: 'bar',
       data: {
         labels,
@@ -854,14 +858,8 @@ barChartInstance = new Chart(ctx, {
       }
     });
 
-    console.log(barChartInstance);
-
-    const catData = {};
-    transactions
-      .filter(t => t.type === 'expense')
-      .forEach(t => catData[t.category] = (catData[t.category] || 0) + Number(t.amount || 0));
-
-    const cats = Object.keys(catData);
+    const categories = dashboardAnalytics?.expensesByCategory || [];
+    const cats = categories.map(item => item.category);
     const colors = ['#6366f1','#22c55e','#ef4444','#fbbf24','#22d3ee','#a855f7','#f97316','#ec4899'];
 
     if (pieChartInstance) pieChartInstance.destroy();
@@ -871,7 +869,7 @@ barChartInstance = new Chart(ctx, {
       data: {
         labels: cats.length ? cats : ['No Data'],
         datasets: [{
-          data: cats.length ? cats.map(c => catData[c]) : [1],
+          data: cats.length ? categories.map(item => item.total) : [1],
           backgroundColor: cats.length ? colors : ['rgba(255,255,255,0.1)'],
           borderWidth: 0
         }]
@@ -944,7 +942,8 @@ barChartInstance = new Chart(ctx, {
       amount: Number(document.getElementById('txAmount').value),
       date: document.getElementById('txDate').value,
       category,
-      description: document.getElementById('txDesc').value
+      description: document.getElementById('txDesc').value,
+      paymentMethod: document.getElementById('txPaymentMethod').value || null
     };
 
     try {

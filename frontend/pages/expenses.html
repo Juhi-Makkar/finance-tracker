@@ -44,6 +44,7 @@
     .stat-lbl { font-size:12px; color:var(--muted); }
     .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:28px; }
     .card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:24px; }
+    .history-card { margin-bottom:28px; }
     .card-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
     .card-title { font-size:16px; font-weight:700; }
     .chart-wrap { height:220px; position:relative; }
@@ -129,13 +130,11 @@
       <div class="stat-card"><div class="stat-icon" style="background:rgba(251,191,36,0.15);color:#fbbf24"><i class="fas fa-calendar-days"></i></div><div class="stat-val" style="color:#fbbf24" id="yearExp">₹0</div><div class="stat-lbl">This Year</div></div>
       <div class="stat-card"><div class="stat-icon" style="background:rgba(239,68,68,0.15);color:#ef4444"><i class="fas fa-chart-simple"></i></div><div class="stat-val" style="color:#ef4444" id="avgExp">₹0</div><div class="stat-lbl">Daily Avg</div></div>
     </div>
-    <h3 style="font-size:15px;font-weight:700;margin-bottom:16px;color:var(--muted)">EXPENSES BY CATEGORY</h3>
-    <div class="cat-grid" id="catGrid"></div>
+    <div class="card history-card"><div class="card-header"><span class="card-title">Expense History</span></div><div id="txList"></div></div>
     <div class="grid-2">
       <div class="card"><div class="card-header"><span class="card-title">Monthly Trend</span></div><div class="chart-wrap"><canvas id="expChart"></canvas></div></div>
       <div class="card"><div class="card-header"><span class="card-title">Category Breakdown</span></div><div class="chart-wrap"><canvas id="pieChart"></canvas></div></div>
     </div>
-    <div class="card"><div class="card-header"><span class="card-title">Expense History</span></div><div id="txList"></div></div>
   </div>
 </div>
 <div class="modal-overlay" id="modalOverlay">
@@ -146,8 +145,12 @@
       <div class="form-group"><label>Date</label><input type="date" id="eDate" required/></div>
     </div>
     <div class="form-group"><label>Category</label>
-      <select id="eCat">
-        <option>Rent</option><option>Electricity</option><option>Water</option><option>Internet</option><option>Grocery</option><option>Restaurant</option><option>Snacks</option><option>Bike Petrol</option><option>Bike Servicing</option><option>Public Transport</option><option>Travel</option><option>Shopping</option><option>Clothing</option><option>Beauty</option><option>Entertainment</option><option>YouTube Expenses</option><option>Netflix</option><option>Spotify</option><option>Subscriptions</option><option>Medicines</option><option>Gym</option><option>Doctor</option><option>Books</option><option>Courses</option><option>Miscellaneous</option>
+      <select id="eCat" onchange="toggleCustomCategoryInput()"></select>
+    </div>
+    <div class="form-group" id="customCategoryGroup" style="display:none"><label>Custom Category</label><input type="text" id="eCustomCategory" placeholder="Enter category name" /></div>
+    <div class="form-group"><label>Payment Method <span style="color:var(--muted);font-weight:400">(optional)</span></label>
+      <select id="ePaymentMethod">
+        <option value="">Not specified</option><option>UPI</option><option>Cash</option><option>Bank Transfer</option><option>Debit Card</option><option>Credit Card</option><option>Other</option>
       </select>
     </div>
     <div class="form-group"><label>Description (optional)</label><textarea id="eNote" rows="2" placeholder="Optional note..."></textarea></div>
@@ -155,15 +158,11 @@
   </div>
 </div>
 <script src="../js/theme.js"></script>
+<script src="../js/categories.js"></script>
 <script src="../js/api.js"></script>
 <script>
   const API = ['localhost', '127.0.0.1'].includes(window.location.hostname) ? 'http://localhost:5000/api' : 'https://finance-tracker-3l07.onrender.com/api';
-  const expenseCategories = [
-    'Rent','Electricity','Water','Internet','Grocery','Restaurant','Snacks',
-    'Bike Petrol','Bike Servicing','Public Transport','Travel','Shopping',
-    'Clothing','Beauty','Entertainment','YouTube Expenses','Netflix','Spotify',
-    'Subscriptions','Medicines','Gym','Doctor','Books','Courses','Miscellaneous'
-  ];
+  const { expense: expenseCategories } = FinTrackCategories;
   const CAT_EMOJIS = {
     Rent:'🏠', Electricity:'⚡', Water:'💧', Internet:'🌐', Grocery:'🛒',
     Restaurant:'🍽️', Snacks:'🍿', 'Bike Petrol':'⛽', 'Bike Servicing':'🔧',
@@ -268,6 +267,12 @@
   function populateCategoryOptions() {
     document.getElementById('eCat').innerHTML =
       expenseCategories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
+    toggleCustomCategoryInput();
+  }
+
+  function toggleCustomCategoryInput() {
+    const isOther = document.getElementById('eCat').value === 'Other';
+    document.getElementById('customCategoryGroup').style.display = isOther ? 'block' : 'none';
   }
 
   function formatCurrency(amount) {
@@ -299,16 +304,6 @@ exp.forEach(tx => {
   categories[category] =
     (categories[category] || 0) + Number(tx.amount || 0);
 });
-
-    document.getElementById('catGrid').innerHTML = Object.entries(categories)
-      .sort((a, b) => b[1] - a[1])
-      .map(([category, amount]) => `
-        <div class="cat-card">
-          <div class="cat-emoji">${CAT_EMOJIS[category] || '💸'}</div>
-          <div class="cat-name">${category}</div>
-          <div class="cat-amount">${formatCurrency(amount)}</div>
-        </div>
-      `).join('') || '<p style="color:var(--muted);font-size:13px">No expenses yet</p>';
 
     renderCharts(exp);
 
@@ -382,20 +377,25 @@ exp.forEach(tx => {
   async function addExpense() {
     const amount = Number(document.getElementById('eAmount').value);
     const date = document.getElementById('eDate').value;
-    const category = document.getElementById('eCat').value;
+    const selectedCategory = document.getElementById('eCat').value;
+    const customCategory = document.getElementById('eCustomCategory').value.trim();
+    const category = selectedCategory === 'Other' ? customCategory : selectedCategory;
     const description = document.getElementById('eNote').value;
+    const paymentMethod = document.getElementById('ePaymentMethod').value || null;
 
     if (!amount || !date || !category) {
       alert('Fill all required fields.');
       return;
     }
 
-    const tx = { type: 'expense', amount, date, category, description };
+    const tx = { type: 'expense', amount, date, category, description, paymentMethod };
     await apiRequest('/transactions', { method: 'POST', body: JSON.stringify(tx) });
     closeModal();
     document.getElementById('eAmount').value = '';
     document.getElementById('eNote').value = '';
+    document.getElementById('eCustomCategory').value = '';
     setDefaultDate();
+    populateCategoryOptions();
     await fetchExpenses();
     // Notify budget page to refresh
     notifyBudgetUpdate(); 
